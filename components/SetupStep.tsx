@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { UserDetails } from '../types';
 import { fileToBase64 } from '../utils';
@@ -11,7 +12,7 @@ const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
   const [formData, setFormData] = useState<UserDetails>({
     name: '',
     targetRole: '',
-    experienceLevel: '0-1 years',
+    experienceLevel: 'Fresher / Student',
     industry: '',
     language: 'English', // Defaulted to English
     jobDescription: '',
@@ -82,7 +83,7 @@ const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
                   value={formData.name}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition"
-                  placeholder="John Doe"
+                  placeholder="Krish Chaudhary"
                 />
               </div>
               <div className="space-y-2">
@@ -121,7 +122,6 @@ const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
                   </div>
                 </div>
               </div>
-              {/* Removed Language Dropdown - Defaulting to English */}
             </div>
           </div>
 
