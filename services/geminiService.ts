@@ -1,16 +1,29 @@
 import { GoogleGenAI, Chat, Type, Schema } from "@google/genai";
 import { UserDetails, FeedbackReport } from "../types";
 
-// Ensure process.env is handled safely for TS
-const API_KEY = (typeof process !== 'undefined' && process.env.API_KEY) || '';
+// Safely access the API key
+let API_KEY = '';
+try {
+  // Check if import.meta.env exists before accessing it
+  if (import.meta && import.meta.env) {
+    API_KEY = import.meta.env.VITE_API_KEY || '';
+  }
+} catch (e) {
+  console.warn("Environment variable access failed:", e);
+}
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
-const CHAT_MODEL = 'gemini-2.5-flash';
-// Using Flash for analysis as well to ensure strict JSON schema compliance and speed
-const ANALYSIS_MODEL = 'gemini-2.5-flash'; 
+// Using gemini-1.5-flash as it is stable and available on the free tier immediately
+const CHAT_MODEL = 'gemini-1.5-flash';
+const ANALYSIS_MODEL = 'gemini-1.5-flash'; 
 
 export const startInterviewSession = async (userDetails: UserDetails): Promise<Chat> => {
+  if (!API_KEY) {
+    console.error("API Key is missing. Please check .env or Vercel Settings.");
+    throw new Error("API Key is missing. Please add VITE_API_KEY to your environment variables.");
+  }
+
   const systemInstruction = `You are an expert HR interviewer and career coach conducting a video interview.
   
   CANDIDATE DETAILS:
@@ -39,14 +52,18 @@ export const startInterviewSession = async (userDetails: UserDetails): Promise<C
   
   Start by welcoming the candidate in English and asking the first question.`;
 
-  const chat = ai.chats.create({
-    model: CHAT_MODEL,
-    config: {
-      systemInstruction: systemInstruction,
-    },
-  });
-
-  return chat;
+  try {
+    const chat = ai.chats.create({
+      model: CHAT_MODEL,
+      config: {
+        systemInstruction: systemInstruction,
+      },
+    });
+    return chat;
+  } catch (error) {
+    console.error("Failed to create chat session:", error);
+    throw error;
+  }
 };
 
 export const sendMessageWithVideo = async (
@@ -72,12 +89,16 @@ export const sendMessageWithVideo = async (
     });
   }
 
-  // Passing the array directly to message as per SDK requirement for multimodal
-  const response = await chat.sendMessage({
-    message: parts
-  });
-  
-  return response.text || "";
+  try {
+    // Passing the array directly to message as per SDK requirement for multimodal
+    const response = await chat.sendMessage({
+      message: parts
+    });
+    return response.text || "";
+  } catch (error) {
+    console.error("Gemini API Error (Send Message):", error);
+    return "I'm sorry, I'm having trouble connecting to the server. Could you repeat that?";
+  }
 };
 
 export const sendInitialMessageWithResume = async (chat: Chat, userDetails: UserDetails): Promise<string> => {
@@ -97,11 +118,15 @@ export const sendInitialMessageWithResume = async (chat: Chat, userDetails: User
     });
   }
 
-  const response = await chat.sendMessage({
-    message: parts
-  });
-  
-  return response.text || "";
+  try {
+    const response = await chat.sendMessage({
+      message: parts
+    });
+    return response.text || "";
+  } catch (error) {
+    console.error("Gemini API Error (Initial):", error);
+    return "Hello! I'm ready to start the interview. Can you hear me?";
+  }
 };
 
 export const generateDetailedFeedback = async (
