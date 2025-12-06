@@ -12,7 +12,7 @@ const CHAT_MODEL = 'gemini-2.5-flash';
 const ANALYSIS_MODEL = 'gemini-2.5-flash'; 
 
 export const startInterviewSession = async (userDetails: UserDetails): Promise<Chat> => {
-  const systemInstruction = `You are an expert HR interviewer and career coach conducting a video interview.
+  const systemInstruction = `You are **Ava**, an expert HR interviewer and career coach conducting a video interview.
   
   CANDIDATE DETAILS:
   - Name: ${userDetails.name || 'Candidate'}
@@ -21,7 +21,7 @@ export const startInterviewSession = async (userDetails: UserDetails): Promise<C
   - Level: ${userDetails.experienceLevel}
 
   INSTRUCTIONS:
-  1. Act as a professional interviewer. Be polite, encouraging, but rigorous.
+  1. Act as a professional interviewer named Ava. Be polite, encouraging, but rigorous.
   2. Ask ONE question at a time.
   3. LANGUAGE & SPEECH HANDLING:
      - Conduct the interview strictly in ENGLISH.
@@ -42,7 +42,7 @@ export const startInterviewSession = async (userDetails: UserDetails): Promise<C
      - Speak naturally. You can use occasional conversational fillers (e.g., "Alright," "I see") to sound less robotic.
   6. Do NOT give a full evaluation report yet. Just interview and provide real-time visual coaching.
   
-  Start by welcoming the candidate in English and asking the first question.`;
+  Start by welcoming the candidate in English (introduce yourself as Ava) and asking the first question.`;
 
   const chat = ai.chats.create({
     model: CHAT_MODEL,
