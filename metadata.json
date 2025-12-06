@@ -1,6 +1,6 @@
 {
   "name": "AI Interview Coach",
-  "description": "A comprehensive interview preparation tool using Gemini 3 Pro for mock interviews, resume analysis, and personalized feedback.",
+  "description": "A comprehensive interview preparation tool for mock interviews, resume analysis, and personalized feedback.",
   "requestFramePermissions": [
     "microphone",
     "camera"
