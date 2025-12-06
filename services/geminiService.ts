@@ -1,29 +1,17 @@
+
 import { GoogleGenAI, Chat, Type, Schema } from "@google/genai";
 import { UserDetails, FeedbackReport } from "../types";
 
-// Safely access the API key
-let API_KEY = '';
-try {
-  // Check if import.meta.env exists before accessing it
-  if (import.meta && import.meta.env) {
-    API_KEY = import.meta.env.VITE_API_KEY || '';
-  }
-} catch (e) {
-  console.warn("Environment variable access failed:", e);
-}
+// User requested to hardcode the API Key for private repo deployment
+const API_KEY = 'AIzaSyAWtSEO_J3_IbvbZeYDmiIhSB3nCE8KoJc';
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
-// Using gemini-1.5-flash as it is stable and available on the free tier immediately
+// Switched to gemini-2.5-flash per user request
 const CHAT_MODEL = 'gemini-2.5-flash';
 const ANALYSIS_MODEL = 'gemini-2.5-flash'; 
 
 export const startInterviewSession = async (userDetails: UserDetails): Promise<Chat> => {
-  if (!API_KEY) {
-    console.error("API Key is missing. Please check .env or Vercel Settings.");
-    throw new Error("API Key is missing. Please add VITE_API_KEY to your environment variables.");
-  }
-
   const systemInstruction = `You are an expert HR interviewer and career coach conducting a video interview.
   
   CANDIDATE DETAILS:
@@ -52,18 +40,14 @@ export const startInterviewSession = async (userDetails: UserDetails): Promise<C
   
   Start by welcoming the candidate in English and asking the first question.`;
 
-  try {
-    const chat = ai.chats.create({
-      model: CHAT_MODEL,
-      config: {
-        systemInstruction: systemInstruction,
-      },
-    });
-    return chat;
-  } catch (error) {
-    console.error("Failed to create chat session:", error);
-    throw error;
-  }
+  const chat = ai.chats.create({
+    model: CHAT_MODEL,
+    config: {
+      systemInstruction: systemInstruction,
+    },
+  });
+
+  return chat;
 };
 
 export const sendMessageWithVideo = async (
@@ -95,9 +79,11 @@ export const sendMessageWithVideo = async (
       message: parts
     });
     return response.text || "";
-  } catch (error) {
-    console.error("Gemini API Error (Send Message):", error);
-    return "I'm sorry, I'm having trouble connecting to the server. Could you repeat that?";
+  } catch (error: any) {
+    if (error.status === 404 || (error.message && error.message.includes('404'))) {
+       return "Error: Model not found (404). Please check if your API key supports gemini-2.5-flash or switch to gemini-1.5-flash.";
+    }
+    throw error;
   }
 };
 
@@ -123,9 +109,11 @@ export const sendInitialMessageWithResume = async (chat: Chat, userDetails: User
       message: parts
     });
     return response.text || "";
-  } catch (error) {
-    console.error("Gemini API Error (Initial):", error);
-    return "Hello! I'm ready to start the interview. Can you hear me?";
+  } catch (error: any) {
+    if (error.status === 404) {
+       return "Error: Model not found (404). Please check your API Key or Model configuration.";
+    }
+    throw error;
   }
 };
 
@@ -162,7 +150,15 @@ export const generateDetailedFeedback = async (
        - Calculate an **ATS Score (0-100)** based *only* on the resume document keywords, formatting, and relevance.
        - **CRITICAL**: Even if the interview score is 0, the ATS Score can be high (e.g., 90) if the resume is good. Do not lower the ATS score because of a bad interview.
 
-    3. **OUTPUT FORMAT**:
+    3. **FEEDBACK CATEGORIES**:
+       - You MUST include these exact categories in "categoryFeedback" with scores (0-100):
+         1. "Communication" (Did they provide complete, relevant answers?)
+         2. "Technical Knowledge"
+         3. "Problem Solving & Analytical Skills"
+         4. "Visual Presence & Confidence"
+         5. "Resume Presentation & Elaboration" (Did they explain their resume well?)
+
+    4. **OUTPUT FORMAT**:
        - Strictly follow the JSON schema.
        - All scores are out of 100.
   `;
