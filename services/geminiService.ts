@@ -15,8 +15,8 @@ try {
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 // Using gemini-1.5-flash as it is stable and available on the free tier immediately
-const CHAT_MODEL = 'gemini-1.5-flash';
-const ANALYSIS_MODEL = 'gemini-1.5-flash'; 
+const CHAT_MODEL = 'gemini-2.5-flash';
+const ANALYSIS_MODEL = 'gemini-2.5-flash'; 
 
 export const startInterviewSession = async (userDetails: UserDetails): Promise<Chat> => {
   if (!API_KEY) {
