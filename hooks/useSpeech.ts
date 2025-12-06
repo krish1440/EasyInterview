@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 // Define types for Web Speech API
@@ -119,7 +120,12 @@ export const useSpeech = () => {
       const cleanText = text.replace(/[*#_`]/g, '').trim();
       if (!cleanText) return;
 
-      const utterance = new SpeechSynthesisUtterance(cleanText);
+      // HACK: Add leading punctuation/silence. 
+      // Browsers (especially Chrome) often cut off the first ~0.5s of audio while the engine wakes up.
+      // By adding period-space-period, we sacrifice silence instead of the actual words.
+      const textWithBuffer = ". " + cleanText;
+
+      const utterance = new SpeechSynthesisUtterance(textWithBuffer);
       currentUtteranceRef.current = utterance; // Keep reference to prevent garbage collection
 
       utterance.onstart = () => setIsSpeaking(true);
@@ -148,16 +154,16 @@ export const useSpeech = () => {
       );
       if (preferredVoice) utterance.voice = preferredVoice;
 
-      // 3. CRITICAL FIX: Increased timeout to 100ms. 
-      // This allows the browser audio context to 'wake up' completely and prevents the first word cutoff.
+      // 3. Timeout to ensure cancel() takes effect and audio context wakes up.
+      // We rely on the text buffer (". ") to handle the initial cutoff, 
+      // but a short delay is still robust for the engine state.
       setTimeout(() => {
          if (synthRef.current) {
-            synthRef.current.speak(utterance);
-            
-            // Resume if it was paused (browser quirk)
+            // Explicit resume required for Chrome bugs where it gets stuck in 'paused'
             if (synthRef.current.paused) {
                 synthRef.current.resume();
             }
+            synthRef.current.speak(utterance);
          }
       }, 100);
     }
