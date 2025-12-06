@@ -7,6 +7,51 @@ interface IWindow extends Window {
   SpeechRecognition: any;
 }
 
+// Helper to stitch two strings together preventing duplication
+// e.g. "Thank" + "Thank you" -> "Thank you"
+// e.g. "Hello" + "Hello World" -> "Hello World" (Mobile bug fix)
+// e.g. "My name is" + "Krish" -> "My name is Krish"
+const stitchText = (existing: string, incoming: string): string => {
+  const s = existing.trim();
+  const e = incoming.trim();
+  
+  if (!s) return e;
+  if (!e) return s;
+
+  const sLower = s.toLowerCase();
+  const eLower = e.toLowerCase();
+
+  // 1. Check if incoming fully contains existing (Mobile bug where context is resent)
+  if (eLower.startsWith(sLower)) {
+    return e;
+  }
+
+  // 2. Check for word overlap (Suffix of existing == Prefix of incoming)
+  // This handles "Thank" + "Thank you" -> "Thank you"
+  const existingWords = s.split(/\s+/);
+  const incomingWords = e.split(/\s+/);
+  
+  // Check overlap of up to 5 words to be safe and efficient
+  const maxOverlap = Math.min(existingWords.length, incomingWords.length, 5);
+  
+  for (let i = maxOverlap; i > 0; i--) {
+     const suffix = existingWords.slice(-i).join(' ').toLowerCase();
+     const prefix = incomingWords.slice(0, i).join(' ').toLowerCase();
+     
+     // normalize punctuation for comparison
+     const cleanSuffix = suffix.replace(/[.,?!]/g, '');
+     const cleanPrefix = prefix.replace(/[.,?!]/g, '');
+
+     if (cleanSuffix === cleanPrefix) {
+        // Found overlap: take existing + non-overlapping part of incoming
+        return s + ' ' + incomingWords.slice(i).join(' ');
+     }
+  }
+
+  // No overlap found, just append
+  return s + ' ' + e;
+};
+
 export const useSpeech = () => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -36,7 +81,8 @@ export const useSpeech = () => {
       recognition.onend = () => {
         // When the engine stops (or restarts), we commit the current session's text to the permanent buffer
         if (currentSessionTranscriptRef.current) {
-          committedTranscriptRef.current += (committedTranscriptRef.current ? ' ' : '') + currentSessionTranscriptRef.current;
+          // Use stitchText here to ensure clean merging when committing
+          committedTranscriptRef.current = stitchText(committedTranscriptRef.current, currentSessionTranscriptRef.current);
           currentSessionTranscriptRef.current = '';
         }
 
@@ -57,8 +103,7 @@ export const useSpeech = () => {
         let interimForThisSession = '';
 
         // RECONSTRUCTION STRATEGY:
-        // Instead of appending new chunks (which causes dupes on mobile),
-        // we iterate from 0 to length every time to rebuild the current session's text.
+        // We rebuild the current session's text from scratch every time
         for (let i = 0; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
             finalForThisSession += event.results[i][0].transcript;
@@ -67,15 +112,12 @@ export const useSpeech = () => {
           }
         }
 
-        // Update the ref so onEnd can save it later
-        currentSessionTranscriptRef.current = finalForThisSession;
+        const rawCurrent = (finalForThisSession + ' ' + interimForThisSession).trim();
+        currentSessionTranscriptRef.current = rawCurrent;
 
-        // Display = Committed (Old) + Final (Current) + Interim (Current)
-        const display = [
-          committedTranscriptRef.current, 
-          finalForThisSession, 
-          interimForThisSession
-        ].filter(Boolean).join(' ');
+        // SMART STITCH: Combine committed history with current live text
+        // This removes duplicates like "Thank Thank you" -> "Thank you"
+        const display = stitchText(committedTranscriptRef.current, rawCurrent);
 
         setTranscript(display);
       };
