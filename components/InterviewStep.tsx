@@ -167,8 +167,8 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
       {/* --- Main Visual Area --- */}
       <div className="flex-1 flex flex-col md:flex-row relative overflow-hidden">
         
-        {/* 1. AI Persona / Active Speaker (Top on mobile, Left on Desktop) */}
-        <div className="flex-1 bg-slate-900/50 relative border-b md:border-b-0 md:border-r border-slate-800 flex flex-col">
+        {/* 1. AI Persona / Active Speaker */}
+        <div className="flex-1 bg-slate-900/50 relative border-b md:border-b-0 md:border-r border-slate-800 flex flex-col min-h-[40%] md:min-h-auto">
           {/* Header */}
           <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -176,11 +176,11 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
           </div>
 
           {/* AI Visualization */}
-          <div className="flex-1 flex flex-col items-center justify-center p-8">
-            <div className={`w-32 h-32 md:w-48 md:h-48 rounded-full flex items-center justify-center transition-all duration-500 ${isSpeaking ? 'bg-indigo-500/20 scale-110 shadow-[0_0_60px_rgba(99,102,241,0.3)]' : 'bg-slate-800'}`}>
-              <div className={`w-24 h-24 md:w-36 md:h-36 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg relative`}>
+          <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
+            <div className={`w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 rounded-full flex items-center justify-center transition-all duration-500 ${isSpeaking ? 'bg-indigo-500/20 scale-110 shadow-[0_0_60px_rgba(99,102,241,0.3)]' : 'bg-slate-800'}`}>
+              <div className={`w-16 h-16 sm:w-24 sm:h-24 md:w-36 md:h-36 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg relative`}>
                  {/* Face/Avatar Abstract */}
-                 <div className="text-4xl">🤖</div>
+                 <div className="text-2xl sm:text-4xl">🤖</div>
                  {/* Ripple Effect when speaking */}
                  {isSpeaking && (
                    <>
@@ -190,7 +190,7 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
                  )}
               </div>
             </div>
-            <p className="mt-6 text-slate-400 font-medium text-center max-w-md animate-fadeIn min-h-[3rem]">
+            <p className="mt-4 md:mt-6 text-slate-400 font-medium text-center max-w-md animate-fadeIn min-h-[2rem] text-sm md:text-base px-4">
               {isLoading ? (
                 <span className="flex items-center gap-2 justify-center text-indigo-400">
                   Ava is thinking <span className="animate-bounce">.</span><span className="animate-bounce delay-100">.</span><span className="animate-bounce delay-200">.</span>
@@ -203,8 +203,8 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
             </p>
           </div>
 
-          {/* Chat Transcript Overlay (Collapsible or scrollable) */}
-          <div className="h-1/3 bg-black/40 backdrop-blur-md p-4 overflow-y-auto custom-scrollbar border-t border-white/5">
+          {/* Chat Transcript Overlay */}
+          <div className="h-1/3 min-h-[120px] bg-black/40 backdrop-blur-md p-3 md:p-4 overflow-y-auto custom-scrollbar border-t border-white/5">
             <div className="space-y-3">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`text-sm ${msg.role === 'user' ? 'text-blue-300 text-right' : 'text-slate-300'}`}>
@@ -217,8 +217,8 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
           </div>
         </div>
 
-        {/* 2. User Video Feed (Bottom on mobile, Right on Desktop) */}
-        <div className="h-[250px] md:h-auto md:w-1/3 bg-black relative border-t md:border-t-0 md:border-l border-slate-800">
+        {/* 2. User Video Feed */}
+        <div className="h-[200px] sm:h-[250px] md:h-auto md:w-1/3 bg-black relative border-t md:border-t-0 md:border-l border-slate-800 shrink-0">
            {isVideoEnabled ? (
             <video 
               ref={videoRef} 
@@ -237,7 +237,7 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
           {/* User Status Badge */}
           <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
             <div className="bg-black/60 backdrop-blur px-2 py-1 rounded text-xs font-medium text-white/80">
-              You ({userDetails.name})
+              You
             </div>
             {isListening && (
                <div className="flex items-center gap-2 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse shadow-lg">
@@ -248,8 +248,8 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
           
           {/* Live Rolling Caption Overlay */}
           {currentCaption && (
-            <div className="absolute bottom-4 left-4 right-4 text-center">
-              <div className="inline-block bg-black/70 text-white text-sm px-4 py-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg max-w-full">
+            <div className="absolute bottom-4 left-4 right-4 text-center z-20">
+              <div className="inline-block bg-black/70 text-white text-xs sm:text-sm px-3 py-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg max-w-full truncate">
                 {currentCaption}
               </div>
             </div>
@@ -260,29 +260,30 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
       </div>
 
       {/* --- Control Bar --- */}
-      <div className="h-20 bg-slate-900 border-t border-slate-800 flex items-center justify-between px-4 md:px-8 shrink-0 relative z-20">
+      <div className="h-auto py-3 md:h-24 bg-slate-900 border-t border-slate-800 flex flex-row items-center justify-between px-4 md:px-8 shrink-0 relative z-30 gap-3">
         
         {/* Left: Toggles */}
-        <div className="flex items-center gap-2 md:gap-4">
+        <div className="flex items-center gap-2 md:gap-4 shrink-0">
           <button 
             onClick={() => setIsAudioEnabled(!isAudioEnabled)}
-            className={`p-3 rounded-full transition-all ${isAudioEnabled ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-red-500/20 text-red-500'}`}
+            className={`p-2.5 md:p-3 rounded-full transition-all ${isAudioEnabled ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-red-500/20 text-red-500'}`}
           >
-            {isAudioEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+            {isAudioEnabled ? <Volume2 size={18} className="md:w-5 md:h-5" /> : <VolumeX size={18} className="md:w-5 md:h-5" />}
           </button>
           <button 
             onClick={() => setIsVideoEnabled(!isVideoEnabled)}
-            className={`p-3 rounded-full transition-all ${isVideoEnabled ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-red-500/20 text-red-500'}`}
+            className={`p-2.5 md:p-3 rounded-full transition-all ${isVideoEnabled ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-red-500/20 text-red-500'}`}
           >
-            {isVideoEnabled ? <Video size={20} /> : <VideoOff size={20} />}
+            {isVideoEnabled ? <Video size={18} className="md:w-5 md:h-5" /> : <VideoOff size={18} className="md:w-5 md:h-5" />}
           </button>
         </div>
 
-        {/* Center: Main Action (Tap to Speak / Send) */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        {/* Center: Main Action (Responsive Layout) */}
+        {/* On mobile: Flex grow to fill space. On Desktop: Absolute Center */}
+        <div className="flex-1 flex justify-center md:absolute md:left-1/2 md:-translate-x-1/2 md:flex-none">
           <button
             onClick={toggleRecording}
-            className={`h-14 px-8 rounded-full flex items-center gap-3 transition-all transform shadow-xl ${
+            className={`h-12 md:h-14 px-4 md:px-8 rounded-full flex items-center justify-center gap-2 md:gap-3 transition-all transform shadow-xl w-full md:w-auto ${
               isListening 
                 ? 'bg-red-600 hover:bg-red-700 scale-105 ring-4 ring-red-900/50' 
                 : 'bg-indigo-600 hover:bg-indigo-500 hover:scale-105'
@@ -290,26 +291,27 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
           >
             {isListening ? (
               <>
-                <Send size={20} fill="currentColor" />
-                <span className="font-bold">Tap to Send</span>
+                <Send size={18} className="md:w-5 md:h-5" fill="currentColor" />
+                <span className="font-bold text-sm md:text-base whitespace-nowrap">Tap to Send</span>
               </>
             ) : (
               <>
-                <Mic size={20} />
-                <span className="font-bold">Tap to Speak</span>
+                <Mic size={18} className="md:w-5 md:h-5" />
+                <span className="font-bold text-sm md:text-base whitespace-nowrap">Tap to Speak</span>
               </>
             )}
           </button>
         </div>
 
         {/* Right: End Call */}
-        <div>
+        <div className="shrink-0">
           <button 
             onClick={() => { cancelSpeech(); onFinish(messages); }}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 px-3 py-2.5 md:px-4 md:py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-sm font-medium transition-colors"
+            title="End Interview"
           >
-            <PhoneOff size={18} />
-            <span className="hidden sm:inline">End Interview</span>
+            <PhoneOff size={18} className="md:w-5 md:h-5" />
+            <span className="hidden md:inline">End</span>
           </button>
         </div>
 
