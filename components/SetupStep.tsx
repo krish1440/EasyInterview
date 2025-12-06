@@ -196,7 +196,7 @@ const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
               )}
             </button>
             <p className="text-center text-xs text-slate-400 mt-4">
-              By starting, you agree to enable camera/microphone for the AI analysis. Data is processed locally and via Gemini API.
+              By starting, you agree to enable camera/microphone for the AI analysis. Data is processed locally and via secure AI analysis.
             </p>
           </div>
         </form>
