@@ -16,7 +16,10 @@ export const useSpeech = () => {
   const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis>(window.speechSynthesis);
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const fullTranscriptRef = useRef(''); // Cumulative transcript buffer
+  
+  // Data buffers
+  const committedTranscriptRef = useRef(''); // Text from previous sessions (before pause/restart)
+  const currentSessionTranscriptRef = useRef(''); // Text from the current active session
 
   useEffect(() => {
     const { webkitSpeechRecognition, SpeechRecognition } = window as unknown as IWindow;
@@ -31,8 +34,13 @@ export const useSpeech = () => {
       recognition.onstart = () => setIsListening(true);
       
       recognition.onend = () => {
-        // If we are supposed to be listening (didn't manually stop), restart it
-        // This makes it "infinite"
+        // When the engine stops (or restarts), we commit the current session's text to the permanent buffer
+        if (currentSessionTranscriptRef.current) {
+          committedTranscriptRef.current += (committedTranscriptRef.current ? ' ' : '') + currentSessionTranscriptRef.current;
+          currentSessionTranscriptRef.current = '';
+        }
+
+        // If we are supposed to be listening (didn't manually stop), restart it (Infinite Stream)
         if (recognitionRef.current && !recognitionRef.current.manualStop) {
            try {
              recognition.start();
@@ -45,25 +53,30 @@ export const useSpeech = () => {
       };
 
       recognition.onresult = (event: any) => {
-        let interimTranscript = '';
-        let finalChunk = '';
+        let finalForThisSession = '';
+        let interimForThisSession = '';
 
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
+        // RECONSTRUCTION STRATEGY:
+        // Instead of appending new chunks (which causes dupes on mobile),
+        // we iterate from 0 to length every time to rebuild the current session's text.
+        for (let i = 0; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
-            finalChunk += event.results[i][0].transcript;
+            finalForThisSession += event.results[i][0].transcript;
           } else {
-            interimTranscript += event.results[i][0].transcript;
+            interimForThisSession += event.results[i][0].transcript;
           }
         }
 
-        if (finalChunk) {
-           // Add space if needed
-           fullTranscriptRef.current += (fullTranscriptRef.current ? ' ' : '') + finalChunk.trim();
-        }
+        // Update the ref so onEnd can save it later
+        currentSessionTranscriptRef.current = finalForThisSession;
 
-        // Display = Saved Full Transcript + Current Moving Interim
-        // We trim to ensure clean spacing
-        const display = (fullTranscriptRef.current + ' ' + interimTranscript).trim();
+        // Display = Committed (Old) + Final (Current) + Interim (Current)
+        const display = [
+          committedTranscriptRef.current, 
+          finalForThisSession, 
+          interimForThisSession
+        ].filter(Boolean).join(' ');
+
         setTranscript(display);
       };
 
@@ -87,9 +100,9 @@ export const useSpeech = () => {
     if (recognitionRef.current) {
       try {
         recognitionRef.current.manualStop = false;
-        // Don't clear fullTranscriptRef here if we want to resume? 
-        // Usually "Tap to Speak" implies a fresh turn, so we clear.
-        fullTranscriptRef.current = ''; 
+        // Reset buffers for a fresh turn
+        committedTranscriptRef.current = '';
+        currentSessionTranscriptRef.current = '';
         setTranscript('');
         recognitionRef.current.start();
       } catch (e) {
@@ -106,7 +119,8 @@ export const useSpeech = () => {
   }, []);
 
   const resetTranscript = useCallback(() => {
-     fullTranscriptRef.current = '';
+     committedTranscriptRef.current = '';
+     currentSessionTranscriptRef.current = '';
      setTranscript('');
   }, []);
 
