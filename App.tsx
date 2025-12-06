@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { AppStep, UserDetails, Message } from './types';
 import SetupStep from './components/SetupStep';
@@ -88,10 +89,8 @@ function App() {
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-6 mt-auto">
         <div className="max-w-6xl mx-auto px-4 text-center text-slate-500 text-sm">
-          <p className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
-            <span>Created by <a href="https://portfolio-krish-chaudhary.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-700 font-bold hover:underline transition-colors">Krish Chaudhary</a></span>
-            <span className="hidden sm:inline">•</span>
-            <span>Powered by Gemini 3 Pro</span>
+          <p>
+            Designed and Developed by <a href="https://portfolio-krish-chaudhary.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-700 font-bold hover:underline transition-colors">Krish Chaudhary</a>
           </p>
         </div>
       </footer>
