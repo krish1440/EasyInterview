@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { UserDetails, Message, FeedbackReport } from '../types';
 import { generateDetailedFeedback } from '../services/geminiService';
@@ -61,7 +60,7 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
           </div>
         </div>
         <h3 className="text-2xl font-bold mt-8">Analyzing Performance & Resume</h3>
-        <p className="max-w-md text-center mt-3 text-slate-500">Gemini is processing your video expressions, answers, and calculating your resume's ATS score...</p>
+        <p className="max-w-md text-center mt-3 text-slate-500">AI is processing your video expressions, answers, and calculating your resume's ATS score...</p>
       </div>
     );
   }
