@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { UserDetails, Message, FeedbackReport } from '../types';
 import { generateDetailedFeedback } from '../services/geminiService';
@@ -52,22 +53,22 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-800 animate-fadeIn">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-800 animate-fadeIn px-4 text-center">
         <div className="relative">
-          <div className="w-20 h-20 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+          <div className="w-16 h-16 md:w-20 md:h-20 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-blue-600 animate-pulse" />
+            <Loader2 className="w-6 h-6 md:w-8 md:h-8 text-blue-600 animate-pulse" />
           </div>
         </div>
-        <h3 className="text-2xl font-bold mt-8">Analyzing Performance & Resume</h3>
-        <p className="max-w-md text-center mt-3 text-slate-500">AI is processing your video expressions, answers, and calculating your resume's ATS score...</p>
+        <h3 className="text-xl md:text-2xl font-bold mt-6 md:mt-8">Analyzing Performance & Resume</h3>
+        <p className="max-w-md text-center mt-3 text-sm md:text-base text-slate-500">AI is processing your video expressions, answers, and calculating your resume's ATS score...</p>
       </div>
     );
   }
 
   if (error || !report) {
     return (
-      <div className="text-center p-8 bg-red-50 rounded-2xl border border-red-100 animate-fadeIn">
+      <div className="text-center p-8 bg-red-50 rounded-2xl border border-red-100 animate-fadeIn mx-4">
         <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-red-500" />
         <h3 className="text-lg font-bold text-red-700">Analysis Error</h3>
         <p className="text-red-600 mb-4">{error || "Something went wrong."}</p>
@@ -86,57 +87,58 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
   };
 
   return (
-    <div className="max-w-6xl mx-auto pb-12 animate-fadeIn">
+    <div className="max-w-6xl mx-auto pb-12 animate-fadeIn w-full">
       {/* Toast Notification */}
       {copied && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl z-50 flex items-center gap-2 animate-fadeIn">
-          <CheckCircle size={18} className="text-green-400" />
-          <span className="font-medium">Report copied to clipboard!</span>
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-4 py-2 md:px-6 md:py-3 rounded-full shadow-2xl z-50 flex items-center gap-2 animate-fadeIn w-max max-w-[90%] text-sm md:text-base">
+          <CheckCircle size={18} className="text-green-400 shrink-0" />
+          <span className="font-medium truncate">Report copied to clipboard!</span>
         </div>
       )}
 
       {/* Header */}
-      <div className="bg-slate-900 text-white p-8 rounded-3xl shadow-xl relative overflow-hidden mb-8">
+      <div className="bg-slate-900 text-white p-6 md:p-8 rounded-2xl md:rounded-3xl shadow-xl relative overflow-hidden mb-6 md:mb-8 mx-4 md:mx-0">
         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2"></div>
         
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-medium mb-3">
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="w-full">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-[10px] md:text-xs font-medium mb-3">
               <CheckCircle size={12} className="text-green-400" /> Analysis Complete
             </div>
-            <h1 className="text-3xl font-bold">{userDetails.targetRole} Report</h1>
-            <p className="text-slate-400 mt-1">{userDetails.experienceLevel} • {userDetails.language}</p>
+            <h1 className="text-2xl md:text-3xl font-bold leading-tight">{userDetails.targetRole} Report</h1>
+            <p className="text-slate-400 mt-1 text-sm md:text-base">{userDetails.experienceLevel} • {userDetails.language}</p>
           </div>
           
-          <div className="flex items-center gap-4">
-             <div className="text-right hidden sm:block">
+          <div className="flex flex-row md:flex-row items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+             <div className="text-left md:text-right">
                <div className="text-xs text-slate-400 uppercase tracking-wider font-bold">Overall Score</div>
-               <div className={`text-4xl font-black ${report.overallScore >= 70 ? 'text-green-400' : 'text-yellow-400'}`}>{report.overallScore} <span className="text-lg font-normal text-slate-500">/100</span></div>
+               <div className={`text-3xl md:text-4xl font-black ${report.overallScore >= 70 ? 'text-green-400' : 'text-yellow-400'}`}>{report.overallScore} <span className="text-base md:text-lg font-normal text-slate-500">/100</span></div>
              </div>
-             <div className="h-12 w-px bg-white/10 hidden sm:block"></div>
-             <button onClick={handleCopy} className="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition backdrop-blur-sm group relative">
-                <Copy size={20} />
-                <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] bg-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">Copy Report</span>
-             </button>
-             <button onClick={onRestart} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold shadow-lg shadow-indigo-500/30 transition">
-                New Session
-             </button>
+             
+             <div className="flex gap-2">
+                <button onClick={handleCopy} className="p-3 bg-white/10 hover:bg-white/20 rounded-xl transition backdrop-blur-sm group relative" title="Copy Report">
+                    <Copy size={20} />
+                </button>
+                <button onClick={onRestart} className="px-4 py-3 md:px-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold shadow-lg shadow-indigo-500/30 transition text-sm md:text-base whitespace-nowrap">
+                    New Session
+                </button>
+             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 mx-4 md:mx-0">
         
         {/* Left Column: Visuals & Radar */}
-        <div className="space-y-8 lg:col-span-1">
+        <div className="space-y-6 md:space-y-8 lg:col-span-1">
            {/* Radar Chart */}
-           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-             <h3 className="font-bold text-slate-800 mb-4">Interview Performance</h3>
-             <div className="h-64 -ml-4">
+           <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
+             <h3 className="font-bold text-slate-800 mb-2 md:mb-4">Interview Performance</h3>
+             <div className="h-56 md:h-64 -ml-4">
                 <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="75%" data={chartData}>
+                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
                     <PolarGrid stroke="#e2e8f0" />
-                    <PolarAngleAxis dataKey="subject" tick={{fontSize: 10, fill: '#64748b'}} />
+                    <PolarAngleAxis dataKey="subject" tick={{fontSize: 9, fill: '#64748b'}} />
                     <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                     <Radar name="Score" dataKey="A" stroke="#4f46e5" fill="#4f46e5" fillOpacity={0.2} />
                   </RadarChart>
@@ -145,7 +147,7 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
            </div>
            
            {/* Resume & ATS Analysis Card */}
-           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
+           <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 opacity-50"></div>
              <div className="relative z-10">
                 <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
@@ -163,7 +165,7 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
 
                 <div className="space-y-4">
                    <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Resume Strengths</h4>
+                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Resume Strengths</h4>
                       <ul className="space-y-1">
                          {report.resumeAnalysis.strengths.slice(0, 3).map((s, i) => (
                             <li key={i} className="text-xs text-slate-600 flex items-start gap-2">
@@ -174,7 +176,7 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
                    </div>
                    
                    <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Resume Improvements</h4>
+                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Resume Improvements</h4>
                       <ul className="space-y-1">
                          {report.resumeAnalysis.weaknesses.slice(0, 3).map((w, i) => (
                             <li key={i} className="text-xs text-slate-600 flex items-start gap-2">
@@ -194,25 +196,25 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
              </div>
            </div>
 
-           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+           <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
              <h3 className="font-bold text-slate-800 mb-4">Executive Summary</h3>
              <p className="text-slate-600 text-sm leading-relaxed">{report.overallSummary}</p>
            </div>
         </div>
 
         {/* Middle/Right: Details */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-6 md:space-y-8">
           
           {/* Categories */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              {report.categoryFeedback.map((cat, idx) => (
-               <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition">
+               <div key={idx} className="bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition">
                  <div className="flex justify-between items-center mb-3">
-                   <span className="font-bold text-slate-700 flex items-center gap-2">
+                   <span className="font-bold text-slate-700 flex items-center gap-2 text-sm md:text-base">
                      {cat.category === 'Visual Presence & Confidence' && <Video size={16} className="text-purple-500" />}
                      {cat.category}
                    </span>
-                   <span className={`text-sm font-bold px-2 py-1 rounded-lg border ${getScoreColor(cat.score)}`}>
+                   <span className={`text-xs md:text-sm font-bold px-2 py-1 rounded-lg border ${getScoreColor(cat.score)}`}>
                      {cat.score}/100
                    </span>
                  </div>
@@ -234,20 +236,20 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
 
           {/* Q&A Breakdown */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-             <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-               <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2">
+             <div className="p-4 md:p-6 border-b border-slate-100 bg-slate-50/50">
+               <h3 className="font-bold text-base md:text-lg text-slate-800 flex items-center gap-2">
                  <BookOpen className="text-indigo-600" size={20} /> Question-by-Question Review
                </h3>
              </div>
              <div className="divide-y divide-slate-100">
                {report.questionFeedback.map((q, i) => (
-                 <div key={i} className="p-6 hover:bg-slate-50 transition">
+                 <div key={i} className="p-4 md:p-6 hover:bg-slate-50 transition">
                     <div className="flex gap-3 mb-2">
-                      <span className="text-xs font-bold bg-slate-200 text-slate-600 px-2 py-1 rounded h-fit">Q{i+1}</span>
+                      <span className="text-xs font-bold bg-slate-200 text-slate-600 px-2 py-1 rounded h-fit shrink-0">Q{i+1}</span>
                       <p className="font-semibold text-slate-800 text-sm">{q.question}</p>
                     </div>
                     
-                    <div className="ml-10 space-y-3">
+                    <div className="ml-0 md:ml-10 space-y-3 mt-2 md:mt-0">
                       <div className="bg-white border border-slate-200 p-3 rounded-lg text-sm text-slate-600 italic">
                         "{q.userAnswer}"
                       </div>
@@ -274,12 +276,12 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
           </div>
           
           {/* Roadmap */}
-          <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-xl">
-            <h3 className="font-bold text-lg mb-6">Recommended Learning Path</h3>
+          <div className="bg-slate-900 text-white p-5 md:p-6 rounded-2xl shadow-xl">
+            <h3 className="font-bold text-base md:text-lg mb-4 md:mb-6">Recommended Learning Path</h3>
             <div className="space-y-4">
               {report.learningRoadmap.slice(0, 4).map((item, i) => (
-                <div key={i} className="flex gap-4 items-start bg-white/5 p-4 rounded-xl border border-white/10">
-                   <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-sm shrink-0">
+                <div key={i} className="flex gap-4 items-start bg-white/5 p-3 md:p-4 rounded-xl border border-white/10">
+                   <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-xs md:text-sm shrink-0">
                      {i+1}
                    </div>
                    <div>
