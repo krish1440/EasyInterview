@@ -36,10 +36,10 @@ function App() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={handleRestart}>
              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">IV</div>
-             <span className="font-bold text-xl tracking-tight text-slate-800">InterView AI</span>
+             <span className="font-bold text-lg md:text-xl tracking-tight text-slate-800">InterView AI</span>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
              <button 
               onClick={() => setIsHistoryOpen(true)}
               className="text-slate-500 hover:text-slate-700 p-2 rounded-full hover:bg-slate-100 transition"
@@ -47,25 +47,25 @@ function App() {
             >
               <HistoryIcon size={20} />
             </button>
-             <div className="hidden sm:flex items-center gap-2 text-sm font-medium text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full">
-               <User size={14} />
-               <span>{userDetails?.name || 'Guest'}</span>
+             <div className="flex items-center gap-2 text-sm font-medium text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full max-w-[120px] md:max-w-none">
+               <User size={14} className="shrink-0" />
+               <span className="truncate">{userDetails?.name || 'Guest'}</span>
              </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         
         {/* Progress Stepper */}
-        <div className="flex justify-center mb-8">
-           <div className="flex items-center gap-2 text-sm font-medium">
-              <span className={`px-3 py-1 rounded-full ${currentStep === AppStep.SETUP ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}`}>1. Setup</span>
-              <div className="w-8 h-px bg-slate-300"></div>
-              <span className={`px-3 py-1 rounded-full ${currentStep === AppStep.INTERVIEW ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}`}>2. Interview</span>
-              <div className="w-8 h-px bg-slate-300"></div>
-              <span className={`px-3 py-1 rounded-full ${currentStep === AppStep.FEEDBACK ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}`}>3. Feedback</span>
+        <div className="flex justify-center mb-6 md:mb-8">
+           <div className="flex items-center gap-2 text-xs md:text-sm font-medium">
+              <span className={`px-2 py-1 md:px-3 md:py-1 rounded-full whitespace-nowrap ${currentStep === AppStep.SETUP ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}`}>1. Setup</span>
+              <div className="w-4 md:w-8 h-px bg-slate-300"></div>
+              <span className={`px-2 py-1 md:px-3 md:py-1 rounded-full whitespace-nowrap ${currentStep === AppStep.INTERVIEW ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}`}>2. Interview</span>
+              <div className="w-4 md:w-8 h-px bg-slate-300"></div>
+              <span className={`px-2 py-1 md:px-3 md:py-1 rounded-full whitespace-nowrap ${currentStep === AppStep.FEEDBACK ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}`}>3. Feedback</span>
            </div>
         </div>
 
@@ -88,7 +88,7 @@ function App() {
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-6 mt-auto">
-        <div className="max-w-6xl mx-auto px-4 text-center text-slate-500 text-sm">
+        <div className="max-w-6xl mx-auto px-4 text-center text-slate-500 text-xs md:text-sm">
           <p>
             Designed and Developed by <a href="https://portfolio-krish-chaudhary.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-700 font-bold hover:underline transition-colors">Krish Chaudhary</a>
           </p>
