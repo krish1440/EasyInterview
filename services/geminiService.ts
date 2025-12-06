@@ -1,8 +1,8 @@
-
 import { GoogleGenAI, Chat, Type, Schema } from "@google/genai";
 import { UserDetails, FeedbackReport } from "../types";
 
-const API_KEY = process.env.API_KEY || '';
+// Ensure process.env is handled safely for TS
+const API_KEY = (typeof process !== 'undefined' && process.env.API_KEY) || '';
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
@@ -53,7 +53,7 @@ export const sendMessageWithVideo = async (
   chat: Chat, 
   text: string, 
   imageBase64?: string | null
-) => {
+): Promise<string> => {
   const parts: any[] = [];
   
   if (text && text.trim().length > 0) {
@@ -77,10 +77,10 @@ export const sendMessageWithVideo = async (
     message: parts
   });
   
-  return response.text;
+  return response.text || "";
 };
 
-export const sendInitialMessageWithResume = async (chat: Chat, userDetails: UserDetails) => {
+export const sendInitialMessageWithResume = async (chat: Chat, userDetails: UserDetails): Promise<string> => {
   const parts: any[] = [];
   
   let text = `I am ready for the interview. My name is ${userDetails.name}. Role: ${userDetails.targetRole}.`;
@@ -101,7 +101,7 @@ export const sendInitialMessageWithResume = async (chat: Chat, userDetails: User
     message: parts
   });
   
-  return response.text;
+  return response.text || "";
 };
 
 export const generateDetailedFeedback = async (
