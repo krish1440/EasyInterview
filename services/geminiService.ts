@@ -141,9 +141,13 @@ export const generateDetailedFeedback = async (
     1. **INTERVIEW SCORE (OVERALL SCORE)**:
        - This must be calculated STRICTLY based on the candidate's answers in the transcript.
        - **CRITICAL**: Do NOT include the Resume/ATS score in this calculation. They are separate.
-       - If the transcript shows the candidate did NOT answer questions, or the answers were missing/empty, the **Overall Score must be 0**.
-       - If the candidate answered poorly, score low (e.g., 20-40).
-       - This score represents "Did they pass the interview?".
+       - **SCORING CALIBRATION**:
+         - **0**: ONLY use this if the transcript shows absolute silence, technical errors, or "No Answer" for ALL questions.
+         - **10-30**: Candidate gave very short, one-word, or irrelevant answers. (Do NOT give 0 if they spoke).
+         - **31-50**: Candidate attempted to answer but was vague, incorrect, or lacked depth.
+         - **51-70**: Average performance, answered the basics but missed details.
+         - **71-100**: Strong, clear, and detailed answers.
+       - **RULE**: If the candidate provided ANY audible text (even if short), the score MUST be greater than 0.
 
     2. **RESUME & ATS ANALYSIS (INDEPENDENT)**:
        - Analyze the provided resume file (if available) against the Target Role ("${userDetails.targetRole}") and Job Description.
@@ -157,6 +161,7 @@ export const generateDetailedFeedback = async (
          3. "Problem Solving & Analytical Skills"
          4. "Visual Presence & Confidence"
          5. "Resume Presentation & Elaboration" (Did they explain their resume well?)
+       - Apply the same scoring calibration rule (No 0s unless silent).
 
     4. **OUTPUT FORMAT**:
        - Strictly follow the JSON schema.
