@@ -34,8 +34,8 @@ function App() {
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={handleRestart}>
-             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">Ai</div>
-             <span className="font-bold text-xl tracking-tight text-slate-800">Interview Coach</span>
+             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">IV</div>
+             <span className="font-bold text-xl tracking-tight text-slate-800">InterView AI</span>
           </div>
           
           <div className="flex items-center gap-4">
@@ -60,11 +60,11 @@ function App() {
         {/* Progress Stepper */}
         <div className="flex justify-center mb-8">
            <div className="flex items-center gap-2 text-sm font-medium">
-              <span className={`px-3 py-1 rounded-full ${currentStep === AppStep.SETUP ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>1. Setup</span>
+              <span className={`px-3 py-1 rounded-full ${currentStep === AppStep.SETUP ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}`}>1. Setup</span>
               <div className="w-8 h-px bg-slate-300"></div>
-              <span className={`px-3 py-1 rounded-full ${currentStep === AppStep.INTERVIEW ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>2. Interview</span>
+              <span className={`px-3 py-1 rounded-full ${currentStep === AppStep.INTERVIEW ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}`}>2. Interview</span>
               <div className="w-8 h-px bg-slate-300"></div>
-              <span className={`px-3 py-1 rounded-full ${currentStep === AppStep.FEEDBACK ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>3. Feedback</span>
+              <span className={`px-3 py-1 rounded-full ${currentStep === AppStep.FEEDBACK ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'}`}>3. Feedback</span>
            </div>
         </div>
 
@@ -87,8 +87,12 @@ function App() {
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-6 mt-auto">
-        <div className="max-w-6xl mx-auto px-4 text-center text-slate-400 text-sm">
-          <p>Powered by Gemini 3 Pro. This tool is for educational purposes only.</p>
+        <div className="max-w-6xl mx-auto px-4 text-center text-slate-500 text-sm">
+          <p className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
+            <span>Created by <a href="https://portfolio-krish-chaudhary.vercel.app/" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-700 font-bold hover:underline transition-colors">Krish Chaudhary</a></span>
+            <span className="hidden sm:inline">•</span>
+            <span>Powered by Gemini 3 Pro</span>
+          </p>
         </div>
       </footer>
 
