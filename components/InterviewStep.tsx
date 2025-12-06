@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { UserDetails, Message } from '../types';
 import { startInterviewSession, sendInitialMessageWithResume, sendMessageWithVideo } from '../services/geminiService';
@@ -171,7 +172,7 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
           {/* Header */}
           <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-xs font-medium tracking-wider text-slate-400 uppercase">AI Interviewer</span>
+            <span className="text-xs font-medium tracking-wider text-slate-400 uppercase">Ava (AI Coach)</span>
           </div>
 
           {/* AI Visualization */}
@@ -192,7 +193,7 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
             <p className="mt-6 text-slate-400 font-medium text-center max-w-md animate-fadeIn min-h-[3rem]">
               {isLoading ? (
                 <span className="flex items-center gap-2 justify-center text-indigo-400">
-                  Thinking <span className="animate-bounce">.</span><span className="animate-bounce delay-100">.</span><span className="animate-bounce delay-200">.</span>
+                  Ava is thinking <span className="animate-bounce">.</span><span className="animate-bounce delay-100">.</span><span className="animate-bounce delay-200">.</span>
                 </span>
               ) : (
                 messages.length > 0 && messages[messages.length - 1].role === 'model' ? 
@@ -207,7 +208,7 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
             <div className="space-y-3">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`text-sm ${msg.role === 'user' ? 'text-blue-300 text-right' : 'text-slate-300'}`}>
-                  <span className="text-xs opacity-50 block mb-0.5">{msg.role === 'user' ? 'You' : 'Interviewer'}</span>
+                  <span className="text-xs opacity-50 block mb-0.5">{msg.role === 'user' ? 'You' : 'Ava'}</span>
                   {msg.text}
                 </div>
               ))}
