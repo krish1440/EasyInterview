@@ -15,8 +15,9 @@ export const useSpeech = () => {
   const synthRef = useRef<SpeechSynthesis>(window.speechSynthesis);
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   
-  // We use a ref to store the finalized text so we don't depend on state updates
-  const finalTranscriptRef = useRef('');
+  // Refs to handle transcript history across restarts
+  const historyTranscriptRef = useRef(''); // Committed text from previous sessions
+  const currentSessionTranscriptRef = useRef(''); // Text from the current active session
 
   useEffect(() => {
     const { webkitSpeechRecognition, SpeechRecognition } = window as unknown as IWindow;
@@ -31,6 +32,12 @@ export const useSpeech = () => {
       recognition.onstart = () => setIsListening(true);
       
       recognition.onend = () => {
+        // When session ends, commit the current session text to history
+        if (currentSessionTranscriptRef.current) {
+          historyTranscriptRef.current += ' ' + currentSessionTranscriptRef.current;
+          currentSessionTranscriptRef.current = '';
+        }
+
         // If we shouldn't be stopped, restart (Infinite Stream)
         if (recognitionRef.current && !recognitionRef.current.manualStop) {
            try {
@@ -44,31 +51,21 @@ export const useSpeech = () => {
       };
 
       recognition.onresult = (event: any) => {
-        let interim = '';
+        // FULL RECONSTRUCTION STRATEGY (Fixes "Thanking Thanking" bug on Mobile)
+        // Instead of appending new results, we rebuild the current session string from scratch
+        // every time the event fires. This handles cases where Android resends 'isFinal' segments.
         
-        // CRITICAL FIX FOR MOBILE DUPLICATION:
-        // Only process results starting from 'event.resultIndex'.
-        // This index tells us which results are NEW. 
-        // Previous versions iterated from 0, causing re-processing of old text on Android.
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            const newSegment = event.results[i][0].transcript;
-            
-            // Simple dedupe: Don't add if it's identical to the very end of our current buffer
-            // (Android sometimes sends the same final segment twice)
-            const trimmedSegment = newSegment.trim();
-            // We verify the new segment isn't already at the end of our stored text
-            if (trimmedSegment && !finalTranscriptRef.current.trim().endsWith(trimmedSegment)) {
-               finalTranscriptRef.current += newSegment + ' ';
-            }
-          } else {
-            // Interim results (gray text that changes as you speak)
-            interim += event.results[i][0].transcript;
-          }
+        let sessionText = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          // We join all available results (Final + Interim)
+          sessionText += event.results[i][0].transcript;
         }
 
-        // Update the UI with Final + Interim
-        setTranscript(finalTranscriptRef.current + interim);
+        currentSessionTranscriptRef.current = sessionText;
+        
+        // UI Transcript = Old History + Current Reconstruction
+        const fullDisplay = (historyTranscriptRef.current + ' ' + sessionText).trim();
+        setTranscript(fullDisplay);
       };
 
       recognitionRef.current = recognition;
@@ -91,7 +88,9 @@ export const useSpeech = () => {
     if (recognitionRef.current) {
       try {
         recognitionRef.current.manualStop = false;
-        finalTranscriptRef.current = ''; // Clear buffer
+        // Reset everything for a fresh turn
+        historyTranscriptRef.current = '';
+        currentSessionTranscriptRef.current = '';
         setTranscript('');
         recognitionRef.current.start();
       } catch (e) {
@@ -104,11 +103,17 @@ export const useSpeech = () => {
     if (recognitionRef.current) {
       recognitionRef.current.manualStop = true;
       recognitionRef.current.stop();
+      // Ensure the final state is captured
+      if (currentSessionTranscriptRef.current) {
+         historyTranscriptRef.current += ' ' + currentSessionTranscriptRef.current;
+         currentSessionTranscriptRef.current = '';
+      }
     }
   }, []);
 
   const resetTranscript = useCallback(() => {
-     finalTranscriptRef.current = '';
+     historyTranscriptRef.current = '';
+     currentSessionTranscriptRef.current = '';
      setTranscript('');
   }, []);
 
