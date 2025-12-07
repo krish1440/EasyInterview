@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { UserDetails } from '../types';
 import { fileToBase64 } from '../utils';
