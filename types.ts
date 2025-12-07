@@ -1,4 +1,3 @@
-
 export enum AppStep {
   SETUP = 'SETUP',
   INTERVIEW = 'INTERVIEW',
