@@ -15,9 +15,9 @@ export const useSpeech = () => {
   const synthRef = useRef<SpeechSynthesis>(window.speechSynthesis);
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   
-  // Refs to handle transcript history across restarts
-  const historyTranscriptRef = useRef(''); // Committed text from previous sessions
-  const currentSessionTranscriptRef = useRef(''); // Text from the current active session
+  // Track final vs interim results to prevent duplication
+  const finalTranscriptRef = useRef(''); // Only committed final results
+  const lastProcessedIndexRef = useRef(0); // Track which results we've seen
 
   useEffect(() => {
     const { webkitSpeechRecognition, SpeechRecognition } = window as unknown as IWindow;
@@ -29,15 +29,12 @@ export const useSpeech = () => {
       recognition.interimResults = true;
       recognition.lang = 'en-US';
 
-      recognition.onstart = () => setIsListening(true);
+      recognition.onstart = () => {
+        setIsListening(true);
+        lastProcessedIndexRef.current = 0; // Reset on start
+      };
       
       recognition.onend = () => {
-        // When session ends, commit the current session text to history
-        if (currentSessionTranscriptRef.current) {
-          historyTranscriptRef.current += ' ' + currentSessionTranscriptRef.current;
-          currentSessionTranscriptRef.current = '';
-        }
-
         // If we shouldn't be stopped, restart (Infinite Stream)
         if (recognitionRef.current && !recognitionRef.current.manualStop) {
            try {
@@ -51,20 +48,32 @@ export const useSpeech = () => {
       };
 
       recognition.onresult = (event: any) => {
-        // FULL RECONSTRUCTION STRATEGY (Fixes "Thanking Thanking" bug on Mobile)
-        // Instead of appending new results, we rebuild the current session string from scratch
-        // every time the event fires. This handles cases where Android resends 'isFinal' segments.
+        // Process only NEW final results to avoid duplication
+        let newFinalText = '';
+        let currentInterimText = '';
         
-        let sessionText = '';
-        for (let i = 0; i < event.results.length; ++i) {
-          // We join all available results (Final + Interim)
-          sessionText += event.results[i][0].transcript;
+        // Iterate through results starting from where we left off
+        for (let i = lastProcessedIndexRef.current; i < event.results.length; i++) {
+          const result = event.results[i];
+          const text = result[0].transcript;
+          
+          if (result.isFinal) {
+            // This is a final result we haven't processed yet
+            newFinalText += (newFinalText ? ' ' : '') + text;
+            lastProcessedIndexRef.current = i + 1; // Mark as processed
+          } else {
+            // This is interim (still being spoken)
+            currentInterimText += (currentInterimText ? ' ' : '') + text;
+          }
         }
-
-        currentSessionTranscriptRef.current = sessionText;
         
-        // UI Transcript = Old History + Current Reconstruction
-        const fullDisplay = (historyTranscriptRef.current + ' ' + sessionText).trim();
+        // Add new final text to our history
+        if (newFinalText) {
+          finalTranscriptRef.current += (finalTranscriptRef.current ? ' ' : '') + newFinalText;
+        }
+        
+        // Display: final + current interim
+        const fullDisplay = (finalTranscriptRef.current + (currentInterimText ? ' ' + currentInterimText : '')).trim();
         setTranscript(fullDisplay);
       };
 
@@ -89,8 +98,8 @@ export const useSpeech = () => {
       try {
         recognitionRef.current.manualStop = false;
         // Reset everything for a fresh turn
-        historyTranscriptRef.current = '';
-        currentSessionTranscriptRef.current = '';
+        finalTranscriptRef.current = '';
+        lastProcessedIndexRef.current = 0;
         setTranscript('');
         recognitionRef.current.start();
       } catch (e) {
@@ -103,17 +112,12 @@ export const useSpeech = () => {
     if (recognitionRef.current) {
       recognitionRef.current.manualStop = true;
       recognitionRef.current.stop();
-      // Ensure the final state is captured
-      if (currentSessionTranscriptRef.current) {
-         historyTranscriptRef.current += ' ' + currentSessionTranscriptRef.current;
-         currentSessionTranscriptRef.current = '';
-      }
     }
   }, []);
 
   const resetTranscript = useCallback(() => {
-     historyTranscriptRef.current = '';
-     currentSessionTranscriptRef.current = '';
+     finalTranscriptRef.current = '';
+     lastProcessedIndexRef.current = 0;
      setTranscript('');
   }, []);
 
