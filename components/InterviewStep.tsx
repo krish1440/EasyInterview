@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { UserDetails, Message } from '../types';
 import { startInterviewSession, sendInitialMessageWithResume, sendMessageWithVideo } from '../services/geminiService';
 import { useSpeech } from '../hooks/useSpeech';
-import { Mic, Send, Video, VideoOff, PhoneOff, Volume2, VolumeX } from 'lucide-react';
+import { Mic, Send, Video, VideoOff, PhoneOff, Volume2, VolumeX, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Chat } from "@google/genai";
 
 interface InterviewStepProps {
@@ -16,6 +15,7 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
   const [chatSession, setChatSession] = useState<Chat | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [initError, setInitError] = useState<string | null>(null);
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -35,38 +35,52 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     cancelSpeech 
   } = useSpeech();
 
-  // Initialize Interview
-  useEffect(() => {
-    const init = async () => {
+  // Initialize Interview Function
+  const initializeInterview = async () => {
+    setIsLoading(true);
+    setInitError(null);
+    try {
+      // 1. Start Session (Handles Model Fallback internally: 2.5-flash -> 2.5-flash-lite)
+      const chat = await startInterviewSession(userDetails);
+      setChatSession(chat);
+      
+      // 2. Setup Camera
       try {
-        const chat = await startInterviewSession(userDetails);
-        setChatSession(chat);
-        
-        // Setup Camera
-        try {
-          const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-          setStream(mediaStream);
-          if (videoRef.current) {
-            videoRef.current.srcObject = mediaStream;
-          }
-        } catch (e) {
-          console.warn("Camera access denied", e);
-          setIsVideoEnabled(false);
+        const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        setStream(mediaStream);
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
         }
-
-        const firstQuestion = await sendInitialMessageWithResume(chat, userDetails);
-        const initialMsg: Message = { role: 'model', text: firstQuestion, timestamp: Date.now() };
-        setMessages([initialMsg]);
-        setIsLoading(false);
-        
-        if (isAudioEnabled) speak(firstQuestion);
-
-      } catch (error) {
-        console.error("Failed to start interview", error);
-        alert("Failed to connect. Please check your API Key.");
+      } catch (e) {
+        console.warn("Camera access denied", e);
+        setIsVideoEnabled(false);
       }
-    };
-    init();
+
+      // 3. Send Context
+      const firstQuestion = await sendInitialMessageWithResume(chat, userDetails);
+      
+      // Check if the response indicates a failure even after fallback
+      if (firstQuestion.startsWith("Error:")) {
+        throw new Error(firstQuestion);
+      }
+
+      const initialMsg: Message = { role: 'model', text: firstQuestion, timestamp: Date.now() };
+      setMessages([initialMsg]);
+      setIsLoading(false);
+      
+      if (isAudioEnabled) speak(firstQuestion);
+
+    } catch (error: any) {
+      console.error("Failed to start interview", error);
+      // Only show error state if ALL fallbacks failed
+      setInitError(error.message || "Unable to connect to AI servers. Please check your network.");
+      setIsLoading(false);
+    }
+  };
+
+  // Run on mount
+  useEffect(() => {
+    initializeInterview();
 
     return () => {
       if (stream) {
@@ -123,13 +137,16 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
       const imageFrame = captureFrame();
 
       const responseText = await sendMessageWithVideo(chatSession, userText, imageFrame);
-      const modelText = responseText || "Could you please elaborate?";
-
-      // 5. Update UI with response
-      const modelMsg: Message = { role: 'model', text: modelText, timestamp: Date.now() };
-      setMessages(prev => [...prev, modelMsg]);
       
-      if (isAudioEnabled) speak(modelText);
+      // Handle mid-session errors gracefully
+      if (responseText.startsWith("Error:")) {
+         setMessages(prev => [...prev, { role: 'model', text: "I'm having trouble connecting right now. Please try tapping send again.", timestamp: Date.now() }]);
+      } else {
+         const modelText = responseText || "Could you please elaborate?";
+         const modelMsg: Message = { role: 'model', text: modelText, timestamp: Date.now() };
+         setMessages(prev => [...prev, modelMsg]);
+         if (isAudioEnabled) speak(modelText);
+      }
 
     } catch (error) {
       console.error("Chat error", error);
@@ -151,7 +168,6 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     }
   };
 
-  // Logic to show only the last ~60 chars of caption to prevent overflow/old text buildup
   const getRollingCaption = (text: string) => {
     if (!text) return "";
     const maxLength = 60;
@@ -160,6 +176,38 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
   };
 
   const currentCaption = getRollingCaption(transcript || inputValue);
+
+  // --- ERROR STATE UI ---
+  if (initError) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-80px)] bg-black text-white rounded-xl overflow-hidden shadow-2xl border border-slate-800 items-center justify-center p-6 text-center">
+        <div className="w-20 h-20 bg-red-900/30 rounded-full flex items-center justify-center mb-6 border border-red-500/50">
+           <AlertTriangle size={40} className="text-red-500" />
+        </div>
+        <h2 className="text-2xl font-bold mb-2">Connection Failed</h2>
+        <p className="text-slate-400 max-w-md mb-8">
+           We couldn't connect to the AI Interviewer. This usually happens if the servers are busy or the API key is limited.
+        </p>
+        <p className="text-xs text-slate-500 mb-8 font-mono bg-slate-900 p-2 rounded">
+           Error: {initError}
+        </p>
+        <div className="flex gap-4">
+          <button 
+             onClick={() => window.location.reload()}
+             className="px-6 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-medium transition"
+          >
+             Go Back
+          </button>
+          <button 
+             onClick={initializeInterview}
+             className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-indigo-500/20 transition"
+          >
+             <RefreshCw size={18} /> Retry Connection
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-80px)] bg-black text-white rounded-xl overflow-hidden shadow-2xl border border-slate-800">
@@ -179,9 +227,7 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
           <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
             <div className={`w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 rounded-full flex items-center justify-center transition-all duration-500 ${isSpeaking ? 'bg-indigo-500/20 scale-110 shadow-[0_0_60px_rgba(99,102,241,0.3)]' : 'bg-slate-800'}`}>
               <div className={`w-16 h-16 sm:w-24 sm:h-24 md:w-36 md:h-36 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg relative`}>
-                 {/* Face/Avatar Abstract */}
                  <div className="text-2xl sm:text-4xl">🤖</div>
-                 {/* Ripple Effect when speaking */}
                  {isSpeaking && (
                    <>
                      <div className="absolute inset-0 border-2 border-indigo-400 rounded-full animate-ping opacity-20"></div>
@@ -234,7 +280,6 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
             </div>
           )}
 
-          {/* User Status Badge */}
           <div className="absolute top-4 right-4 flex flex-col items-end gap-2">
             <div className="bg-black/60 backdrop-blur px-2 py-1 rounded text-xs font-medium text-white/80">
               You
@@ -246,7 +291,6 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
             )}
           </div>
           
-          {/* Live Rolling Caption Overlay */}
           {currentCaption && (
             <div className="absolute bottom-4 left-4 right-4 text-center z-20">
               <div className="inline-block bg-black/70 text-white text-xs sm:text-sm px-3 py-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg max-w-full truncate">
@@ -262,7 +306,6 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
       {/* --- Control Bar --- */}
       <div className="h-auto py-3 md:h-24 bg-slate-900 border-t border-slate-800 flex flex-row items-center justify-between px-4 md:px-8 shrink-0 relative z-30 gap-3">
         
-        {/* Left: Toggles */}
         <div className="flex items-center gap-2 md:gap-4 shrink-0">
           <button 
             onClick={() => setIsAudioEnabled(!isAudioEnabled)}
@@ -278,8 +321,6 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
           </button>
         </div>
 
-        {/* Center: Main Action (Responsive Layout) */}
-        {/* On mobile: Flex grow to fill space. On Desktop: Absolute Center */}
         <div className="flex-1 flex justify-center md:absolute md:left-1/2 md:-translate-x-1/2 md:flex-none">
           <button
             onClick={toggleRecording}
@@ -303,7 +344,6 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
           </button>
         </div>
 
-        {/* Right: End Call */}
         <div className="shrink-0">
           <button 
             onClick={() => { cancelSpeech(); onFinish(messages); }}
