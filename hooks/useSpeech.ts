@@ -87,7 +87,11 @@ export const useSpeech = () => {
         finalTranscriptRef.current = '';
         setTranscript('');
         recognitionRef.current.start();
-      } catch (e) {
+      } catch (e: any) {
+        // Ignore "already started" errors which occur if user toggles rapidly
+        if (e.name === 'InvalidStateError' || e.message?.includes('already started')) {
+          return;
+        }
         console.error("Speech error", e);
       }
     }

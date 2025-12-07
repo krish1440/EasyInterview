@@ -48,9 +48,7 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         setStream(mediaStream);
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
-        }
+        // Note: The useEffect below will attach the stream to videoRef
       } catch (e) {
         console.warn("Camera access denied", e);
         setIsVideoEnabled(false);
@@ -90,6 +88,22 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Sync Video Stream to Video Element when visibility changes
+  useEffect(() => {
+    if (stream) {
+      // Toggle track to save resources/privacy when "off"
+      stream.getVideoTracks().forEach(track => {
+        track.enabled = isVideoEnabled;
+      });
+
+      // Re-attach to DOM element if currently visible
+      if (isVideoEnabled && videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(e => console.log("Video play error:", e));
+      }
+    }
+  }, [isVideoEnabled, stream]);
 
   // Sync transcript to input (but don't auto-send)
   useEffect(() => {
@@ -166,6 +180,24 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
       setInputValue(''); 
       startListening();
     }
+  };
+
+  const toggleAudio = () => {
+    const newState = !isAudioEnabled;
+    setIsAudioEnabled(newState);
+    if (newState) {
+      // Turning Audio ON: Start recording
+      cancelSpeech();
+      startListening();
+    } else {
+      // Turning Audio OFF: Stop recording
+      stopListening();
+      cancelSpeech();
+    }
+  };
+
+  const toggleVideo = () => {
+    setIsVideoEnabled(!isVideoEnabled);
   };
 
   const getRollingCaption = (text: string) => {
@@ -308,13 +340,13 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
         
         <div className="flex items-center gap-2 md:gap-4 shrink-0">
           <button 
-            onClick={() => setIsAudioEnabled(!isAudioEnabled)}
+            onClick={toggleAudio}
             className={`p-2.5 md:p-3 rounded-full transition-all ${isAudioEnabled ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-red-500/20 text-red-500'}`}
           >
             {isAudioEnabled ? <Volume2 size={18} className="md:w-5 md:h-5" /> : <VolumeX size={18} className="md:w-5 md:h-5" />}
           </button>
           <button 
-            onClick={() => setIsVideoEnabled(!isVideoEnabled)}
+            onClick={toggleVideo}
             className={`p-2.5 md:p-3 rounded-full transition-all ${isVideoEnabled ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-red-500/20 text-red-500'}`}
           >
             {isVideoEnabled ? <Video size={18} className="md:w-5 md:h-5" /> : <VideoOff size={18} className="md:w-5 md:h-5" />}
