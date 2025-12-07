@@ -15,7 +15,7 @@ export const useSpeech = () => {
   const synthRef = useRef<SpeechSynthesis>(window.speechSynthesis);
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   
-  // Store only FINAL results (ignore all interim duplicates)
+  // Ref to store the committed final text
   const finalTranscriptRef = useRef('');
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export const useSpeech = () => {
       };
       
       recognition.onend = () => {
-        // If we shouldn't be stopped, restart (Infinite Stream)
+        // Infinite stream: if not manually stopped, restart.
         if (recognitionRef.current && !recognitionRef.current.manualStop) {
            try {
              recognition.start();
@@ -46,21 +46,21 @@ export const useSpeech = () => {
       };
 
       recognition.onresult = (event: any) => {
-        // CRITICAL FIX: Only process results marked as FINAL
-        // This prevents "my my name my name is my name is krish" duplication
-        let finalText = '';
-        
-        for (let i = 0; i < event.results.length; i++) {
+        let interimTranscript = '';
+
+        // Standard Desktop Logic: Iterate only through *new* results using resultIndex
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
-            finalText += event.results[i][0].transcript + ' ';
+            // If final, add to our permanent buffer
+            finalTranscriptRef.current += event.results[i][0].transcript;
+          } else {
+            // If interim (gray text), just store it temporarily for display
+            interimTranscript += event.results[i][0].transcript;
           }
         }
 
-        // Only update if we got new final text
-        if (finalText.trim()) {
-          finalTranscriptRef.current += finalText;
-          setTranscript(finalTranscriptRef.current.trim());
-        }
+        // Display = Committed Final Text + Current Interim Text
+        setTranscript(finalTranscriptRef.current + interimTranscript);
       };
 
       recognitionRef.current = recognition;
@@ -83,7 +83,7 @@ export const useSpeech = () => {
     if (recognitionRef.current) {
       try {
         recognitionRef.current.manualStop = false;
-        // Reset for a fresh turn
+        // Reset buffers for a fresh turn
         finalTranscriptRef.current = '';
         setTranscript('');
         recognitionRef.current.start();
@@ -113,7 +113,8 @@ export const useSpeech = () => {
       const cleanText = text.replace(/[*#_`]/g, '').trim();
       if (!cleanText) return;
 
-      // Buffer for audio cutoff: Prepend silence/punctuation so browser cuts that off instead of words
+      // Buffer for audio cutoff: Prepend silence/punctuation
+      // This fix is good for Desktop too, so we keep it.
       const textWithBuffer = ". " + cleanText;
 
       const utterance = new SpeechSynthesisUtterance(textWithBuffer);
@@ -133,8 +134,9 @@ export const useSpeech = () => {
       };
       
       const voices = synthRef.current.getVoices();
+      // Try to find a good English voice
       const preferredVoice = voices.find(v => 
-        (v.name.includes('Google US English') || v.name.includes('Samantha')) 
+        (v.name.includes('Google US English') || v.name.includes('Samantha') || v.name.includes('Natural')) 
         && v.lang.startsWith('en')
       );
       if (preferredVoice) utterance.voice = preferredVoice;
