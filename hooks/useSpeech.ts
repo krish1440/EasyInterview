@@ -58,8 +58,8 @@ export const useSpeech = () => {
             // (Android sometimes sends the same final segment twice)
             const trimmedSegment = newSegment.trim();
             // We verify the new segment isn't already at the end of our stored text
-            if (!finalTranscriptRef.current.trim().endsWith(trimmedSegment)) {
-               finalTranscriptRef.current += newSegment;
+            if (trimmedSegment && !finalTranscriptRef.current.trim().endsWith(trimmedSegment)) {
+               finalTranscriptRef.current += newSegment + ' ';
             }
           } else {
             // Interim results (gray text that changes as you speak)
