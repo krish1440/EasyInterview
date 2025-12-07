@@ -15,9 +15,8 @@ export const useSpeech = () => {
   const synthRef = useRef<SpeechSynthesis>(window.speechSynthesis);
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   
-  // Track final vs interim results to prevent duplication
-  const finalTranscriptRef = useRef(''); // Only committed final results
-  const lastProcessedIndexRef = useRef(0); // Track which results we've seen
+  // Store only the current live transcript (no finalization until user sends)
+  const liveTranscriptRef = useRef('');
 
   useEffect(() => {
     const { webkitSpeechRecognition, SpeechRecognition } = window as unknown as IWindow;
@@ -31,7 +30,6 @@ export const useSpeech = () => {
 
       recognition.onstart = () => {
         setIsListening(true);
-        lastProcessedIndexRef.current = 0; // Reset on start
       };
       
       recognition.onend = () => {
@@ -48,33 +46,18 @@ export const useSpeech = () => {
       };
 
       recognition.onresult = (event: any) => {
-        // Process only NEW final results to avoid duplication
-        let newFinalText = '';
-        let currentInterimText = '';
-        
-        // Iterate through results starting from where we left off
-        for (let i = lastProcessedIndexRef.current; i < event.results.length; i++) {
-          const result = event.results[i];
-          const text = result[0].transcript;
-          
-          if (result.isFinal) {
-            // This is a final result we haven't processed yet
-            newFinalText += (newFinalText ? ' ' : '') + text;
-            lastProcessedIndexRef.current = i + 1; // Mark as processed
-          } else {
-            // This is interim (still being spoken)
-            currentInterimText += (currentInterimText ? ' ' : '') + text;
+        // Get ONLY the latest interim result (what user is saying right now)
+        let latestInterim = '';
+        for (let i = event.results.length - 1; i >= 0; i--) {
+          if (!event.results[i].isFinal) {
+            latestInterim = event.results[i][0].transcript;
+            break;
           }
         }
-        
-        // Add new final text to our history
-        if (newFinalText) {
-          finalTranscriptRef.current += (finalTranscriptRef.current ? ' ' : '') + newFinalText;
-        }
-        
-        // Display: final + current interim
-        const fullDisplay = (finalTranscriptRef.current + (currentInterimText ? ' ' + currentInterimText : '')).trim();
-        setTranscript(fullDisplay);
+
+        // Update live transcript (just show what they're saying, don't commit)
+        liveTranscriptRef.current = latestInterim;
+        setTranscript(latestInterim);
       };
 
       recognitionRef.current = recognition;
@@ -97,9 +80,8 @@ export const useSpeech = () => {
     if (recognitionRef.current) {
       try {
         recognitionRef.current.manualStop = false;
-        // Reset everything for a fresh turn
-        finalTranscriptRef.current = '';
-        lastProcessedIndexRef.current = 0;
+        // Reset for a fresh turn
+        liveTranscriptRef.current = '';
         setTranscript('');
         recognitionRef.current.start();
       } catch (e) {
@@ -116,8 +98,7 @@ export const useSpeech = () => {
   }, []);
 
   const resetTranscript = useCallback(() => {
-     finalTranscriptRef.current = '';
-     lastProcessedIndexRef.current = 0;
+     liveTranscriptRef.current = '';
      setTranscript('');
   }, []);
 
