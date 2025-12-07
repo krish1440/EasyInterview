@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Chat, Type, Schema } from "@google/genai";
 import { UserDetails, FeedbackReport } from "../types";
 
@@ -7,11 +6,47 @@ const API_KEY = 'AIzaSyAWtSEO_J3_IbvbZeYDmiIhSB3nCE8KoJc';
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
-// Switched to gemini-2.5-flash per user request
-const CHAT_MODEL = 'gemini-2.5-flash';
-const ANALYSIS_MODEL = 'gemini-2.5-flash'; 
+// PRIORITY LIST: Strictly 2.5 series as requested
+const MODEL_PRIORITY_LIST = [
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite'
+];
+
+// Cache the working model so we don't check every time
+let activeModel: string | null = null;
+
+// Helper to find a working model
+const getWorkingModel = async (): Promise<string> => {
+  if (activeModel) return activeModel;
+
+  console.log("Checking for available Gemini models...");
+  
+  for (const model of MODEL_PRIORITY_LIST) {
+    try {
+      // We run a lightweight 'countTokens' command to check if the model exists/is accessible
+      await ai.models.countTokens({
+        model: model,
+        contents: [{ parts: [{ text: 'ping' }] }]
+      });
+      
+      console.log(`✅ Model found and active: ${model}`);
+      activeModel = model;
+      return model;
+    } catch (error: any) {
+      console.warn(`⚠️ Model ${model} not available (Status: ${error.status}). Trying next...`);
+      // If 404 or 403, we continue to the next model
+    }
+  }
+
+  // If both fail, we default to the lite version as a final attempt
+  console.log("⚠️ All checks failed, defaulting to gemini-2.5-flash-lite");
+  return 'gemini-2.5-flash-lite';
+};
 
 export const startInterviewSession = async (userDetails: UserDetails): Promise<Chat> => {
+  // 1. Determine which model to use dynamically
+  const CHAT_MODEL = await getWorkingModel();
+
   const systemInstruction = `You are **Ava**, an expert HR interviewer and career coach conducting a video interview.
   
   CANDIDATE DETAILS:
@@ -85,7 +120,9 @@ export const sendMessageWithVideo = async (
     return response.text || "";
   } catch (error: any) {
     if (error.status === 404 || (error.message && error.message.includes('404'))) {
-       return "Error: Model not found (404). Please check if your API key supports gemini-2.5-flash or switch to gemini-1.5-flash.";
+       // Clear cache to force re-check next time
+       activeModel = null;
+       return "Error: Connection lost. Please try tapping send again.";
     }
     throw error;
   }
@@ -115,6 +152,7 @@ export const sendInitialMessageWithResume = async (chat: Chat, userDetails: User
     return response.text || "";
   } catch (error: any) {
     if (error.status === 404) {
+       activeModel = null;
        return "Error: Model not found (404). Please check your API Key or Model configuration.";
     }
     throw error;
@@ -126,6 +164,9 @@ export const generateDetailedFeedback = async (
   userDetails: UserDetails
 ): Promise<FeedbackReport> => {
   
+  // Also use the working model for feedback
+  const ANALYSIS_MODEL = await getWorkingModel();
+
   const transcriptText = transcript.map(t => `${t.role.toUpperCase()}: ${t.text}`).join('\n\n');
 
   const prompt = `
