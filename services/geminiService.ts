@@ -6,7 +6,7 @@ const API_KEY = 'AIzaSyAWtSEO_J3_IbvbZeYDmiIhSB3nCE8KoJc';
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
-// PRIORITY LIST: Strictly 2.5 series as requested
+// PRIORITY LIST: Strictly restricted to user's available 2.5 models
 const MODEL_PRIORITY_LIST = [
   'gemini-2.5-flash',
   'gemini-2.5-flash-lite'
@@ -23,6 +23,7 @@ const getWorkingModel = async (): Promise<string> => {
   
   for (const model of MODEL_PRIORITY_LIST) {
     try {
+      console.log(`Testing model: ${model}...`);
       // We run a lightweight 'countTokens' command to check if the model exists/is accessible
       await ai.models.countTokens({
         model: model,
@@ -33,14 +34,14 @@ const getWorkingModel = async (): Promise<string> => {
       activeModel = model;
       return model;
     } catch (error: any) {
-      console.warn(`⚠️ Model ${model} not available (Status: ${error.status}). Trying next...`);
-      // If 404 or 403, we continue to the next model
+      console.warn(`⚠️ Model ${model} not available (Status: ${error.status || error.message}).`);
+      // Continue to next model
     }
   }
 
-  // If both fail, we default to the lite version as a final attempt
-  console.log("⚠️ All checks failed, defaulting to gemini-2.5-flash-lite");
-  return 'gemini-2.5-flash-lite';
+  // If everything fails, default to the primary 2.5 model as strictly requested
+  console.log("⚠️ All checks failed, defaulting to gemini-2.5-flash");
+  return 'gemini-2.5-flash';
 };
 
 export const startInterviewSession = async (userDetails: UserDetails): Promise<Chat> => {
