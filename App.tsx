@@ -4,7 +4,7 @@ import SetupStep from './components/SetupStep';
 import InterviewStep from './components/InterviewStep';
 import FeedbackStep from './components/FeedbackStep';
 import HistorySidebar from './components/HistorySidebar';
-import { LayoutGrid, History as HistoryIcon, User, Monitor, Laptop, Globe, AlertCircle } from 'lucide-react';
+import { LayoutGrid, History as HistoryIcon, User, Monitor, Laptop, Globe, BrainCircuit } from 'lucide-react';
 
 function App() {
   const [currentStep, setCurrentStep] = useState<AppStep>(AppStep.SETUP);
@@ -38,7 +38,7 @@ function App() {
         <h1 className="text-3xl font-extrabold text-slate-900 mb-3 tracking-tight">Desktop Experience Only</h1>
         <p className="text-slate-500 max-w-md text-lg leading-relaxed mb-8">
            To ensure realistic AI video analysis and high-accuracy speech recognition, 
-           <strong className="text-slate-700"> InterView AI</strong> requires the performance of a Laptop or Desktop computer.
+           <strong className="text-slate-700"> InterviewPilot</strong> requires the performance of a Laptop or Desktop computer.
         </p>
 
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 w-full max-w-sm text-left">
@@ -80,8 +80,10 @@ function App() {
         <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
           <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
             <div className="flex items-center gap-2 cursor-pointer group" onClick={handleRestart}>
-              <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">IV</div>
-              <span className="font-bold text-xl tracking-tight text-slate-800">InterView AI</span>
+              <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
+                <BrainCircuit size={20} />
+              </div>
+              <span className="font-bold text-xl tracking-tight text-slate-800 group-hover:text-indigo-600 transition-colors">InterviewPilot</span>
             </div>
             
             <div className="flex items-center gap-4">
