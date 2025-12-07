@@ -23,23 +23,35 @@ const getWorkingModel = async (): Promise<string> => {
   
   for (const model of MODEL_PRIORITY_LIST) {
     try {
-      console.log(`Testing model: ${model}...`);
-      // We run a lightweight 'countTokens' command to check if the model exists/is accessible
-      await ai.models.countTokens({
+      console.log(`Testing model quota: ${model}...`);
+      // CRITICAL FIX: Use generateContent instead of countTokens.
+      // countTokens does not consume 'generate_content' quota, so it gives false positives 
+      // when the daily limit (e.g., 20/day) is reached.
+      // We send a minimal request to test the actual generation capability.
+      await ai.models.generateContent({
         model: model,
-        contents: [{ parts: [{ text: 'ping' }] }]
+        contents: [{ parts: [{ text: 'hi' }] }],
+        config: { maxOutputTokens: 1 }
       });
       
-      console.log(`✅ Model found and active: ${model}`);
+      console.log(`✅ Model operational: ${model}`);
       activeModel = model;
       return model;
     } catch (error: any) {
-      console.warn(`⚠️ Model ${model} not available (Status: ${error.status || error.message}).`);
-      // Continue to next model
+      // Check for Quota Exceeded (429) or Not Found (404)
+      const isQuotaError = error.status === 429 || error.code === 429 || 
+                           (error.message && (error.message.includes('429') || error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED')));
+      
+      if (isQuotaError) {
+        console.warn(`⚠️ Model ${model} QUOTA EXCEEDED. Switching to next...`);
+      } else {
+        console.warn(`⚠️ Model ${model} failed check (Status: ${error.status || error.message}).`);
+      }
+      // Continue to next model in list
     }
   }
 
-  // If everything fails, default to the primary 2.5 model as strictly requested
+  // If everything fails, default to the primary 2.5 model (and let the UI handle the error)
   console.log("⚠️ All checks failed, defaulting to gemini-2.5-flash");
   return 'gemini-2.5-flash';
 };
@@ -120,10 +132,18 @@ export const sendMessageWithVideo = async (
     });
     return response.text || "";
   } catch (error: any) {
+    // Check for Quota/Connection errors
+    const isQuotaError = error.status === 429 || error.code === 429 || 
+                         (error.message && (error.message.includes('429') || error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED')));
+    
     if (error.status === 404 || (error.message && error.message.includes('404'))) {
-       // Clear cache to force re-check next time
-       activeModel = null;
+       activeModel = null; // Force re-check on next attempt
        return "Error: Connection lost. Please try tapping send again.";
+    }
+    
+    if (isQuotaError) {
+       activeModel = null; // Clear active model so getWorkingModel tries the next one (Lite)
+       return "Error: Daily quota exceeded for this model. Please tap Retry/Send to switch to the backup model.";
     }
     throw error;
   }
@@ -152,9 +172,17 @@ export const sendInitialMessageWithResume = async (chat: Chat, userDetails: User
     });
     return response.text || "";
   } catch (error: any) {
+    const isQuotaError = error.status === 429 || error.code === 429 || 
+                         (error.message && (error.message.includes('429') || error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED')));
+
     if (error.status === 404) {
        activeModel = null;
-       return "Error: Model not found (404). Please check your API Key or Model configuration.";
+       return "Error: Model not found (404). Please check configuration.";
+    }
+    
+    if (isQuotaError) {
+       activeModel = null; // Reset so next try uses fallback
+       return "Error: Quota exceeded. Please try again to switch models.";
     }
     throw error;
   }
