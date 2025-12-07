@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AppStep, UserDetails, Message } from './types';
 import SetupStep from './components/SetupStep';
