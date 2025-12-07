@@ -15,8 +15,8 @@ export const useSpeech = () => {
   const synthRef = useRef<SpeechSynthesis>(window.speechSynthesis);
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   
-  // Store only the current live transcript (no finalization until user sends)
-  const liveTranscriptRef = useRef('');
+  // Store only FINAL results (ignore all interim duplicates)
+  const finalTranscriptRef = useRef('');
 
   useEffect(() => {
     const { webkitSpeechRecognition, SpeechRecognition } = window as unknown as IWindow;
@@ -46,18 +46,21 @@ export const useSpeech = () => {
       };
 
       recognition.onresult = (event: any) => {
-        // Get ONLY the latest interim result (what user is saying right now)
-        let latestInterim = '';
-        for (let i = event.results.length - 1; i >= 0; i--) {
-          if (!event.results[i].isFinal) {
-            latestInterim = event.results[i][0].transcript;
-            break;
+        // CRITICAL FIX: Only process results marked as FINAL
+        // This prevents "my my name my name is my name is krish" duplication
+        let finalText = '';
+        
+        for (let i = 0; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            finalText += event.results[i][0].transcript + ' ';
           }
         }
 
-        // Update live transcript (just show what they're saying, don't commit)
-        liveTranscriptRef.current = latestInterim;
-        setTranscript(latestInterim);
+        // Only update if we got new final text
+        if (finalText.trim()) {
+          finalTranscriptRef.current += finalText;
+          setTranscript(finalTranscriptRef.current.trim());
+        }
       };
 
       recognitionRef.current = recognition;
@@ -81,7 +84,7 @@ export const useSpeech = () => {
       try {
         recognitionRef.current.manualStop = false;
         // Reset for a fresh turn
-        liveTranscriptRef.current = '';
+        finalTranscriptRef.current = '';
         setTranscript('');
         recognitionRef.current.start();
       } catch (e) {
@@ -98,7 +101,7 @@ export const useSpeech = () => {
   }, []);
 
   const resetTranscript = useCallback(() => {
-     liveTranscriptRef.current = '';
+     finalTranscriptRef.current = '';
      setTranscript('');
   }, []);
 
