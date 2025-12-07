@@ -1,5 +1,5 @@
 {
-  "name": "InterviewPilot",
+  "name": "EasyInterview",
   "description": "A comprehensive interview preparation tool for mock interviews, resume analysis, and personalized feedback.",
   "requestFramePermissions": [
     "microphone",
