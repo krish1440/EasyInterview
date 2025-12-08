@@ -9,10 +9,10 @@ import { GoogleGenAI, Chat, Type, Schema } from "@google/genai";
 import { UserDetails, FeedbackReport } from "../types";
 
 // ✅ Read API key securely from environment variable
-const API_KEY = process.env.GEMINI_API_KEY as string;
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
 
 if (!API_KEY) {
-  throw new Error("❌ GEMINI_API_KEY not found in environment variables");
+  throw new Error("❌ VITE_GEMINI_API_KEY missing");
 }
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
