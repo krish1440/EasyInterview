@@ -1,23 +1,10 @@
-// import { GoogleGenAI, Chat, Type, Schema } from "@google/genai";
-// import { UserDetails, FeedbackReport } from "../types";
-
-// // User requested to hardcode the API Key for private repo deployment
-// const API_KEY = 'AIzaSyAWtSEO_J3_IbvbZeYDmiIhSB3nCE8KoJc';
-
-// const ai = new GoogleGenAI({ apiKey: API_KEY });
 import { GoogleGenAI, Chat, Type, Schema } from "@google/genai";
 import { UserDetails, FeedbackReport } from "../types";
 
 // ✅ Read API key securely from environment variable
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
+// The API key must be obtained exclusively from process.env.API_KEY per guidelines.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-if (!API_KEY) {
-  throw new Error("❌ VITE_GEMINI_API_KEY missing");
-}
-
-const ai = new GoogleGenAI({ apiKey: API_KEY });
-///
-///
 // PRIORITY LIST: Strictly restricted to user's available 2.5 models
 const MODEL_PRIORITY_LIST = [
   'gemini-2.5-flash',
@@ -43,7 +30,10 @@ const getWorkingModel = async (): Promise<string> => {
       await ai.models.generateContent({
         model: model,
         contents: [{ parts: [{ text: 'hi' }] }],
-        config: { maxOutputTokens: 1 }
+        config: { 
+          maxOutputTokens: 1,
+          thinkingConfig: { thinkingBudget: 0 } // Disable thinking for probe to safe tokens and latency
+        }
       });
       
       console.log(`✅ Model operational: ${model}`);
