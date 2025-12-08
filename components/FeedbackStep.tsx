@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { UserDetails, Message, FeedbackReport } from '../types';
 import { generateDetailedFeedback } from '../services/geminiService';
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
-import { CheckCircle, AlertTriangle, BookOpen, Copy, Loader2, Video, FileText, Star, RefreshCw, ChevronRight } from 'lucide-react';
+import { CheckCircle, AlertTriangle, BookOpen, Copy, Loader2, Video, FileText, Star, RefreshCw, ChevronRight, Activity } from 'lucide-react';
 
 interface FeedbackStepProps {
   userDetails: UserDetails;
@@ -50,6 +50,47 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const renderCustomTick = ({ payload, x, y, textAnchor }: any) => {
+    const text = payload.value;
+    let lines = [text];
+    
+    // Smart wrapping logic
+    if (text.length > 16) {
+       if (text.includes(' & ')) {
+         const parts = text.split(' & ');
+         lines = [parts[0], '& ' + parts[1]];
+       } else {
+         const mid = Math.floor(text.length / 2);
+         // Look for closest space to middle
+         const lastSpace = text.lastIndexOf(' ', mid + 5);
+         const firstSpace = text.indexOf(' ', mid - 5);
+         const spacePos = lastSpace > 0 ? lastSpace : firstSpace;
+         
+         if (spacePos > 0) { 
+            lines = [text.slice(0, spacePos), text.slice(spacePos + 1)];
+         }
+       }
+    }
+    
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text 
+          x={0} 
+          y={0} 
+          dy={lines.length > 1 ? -10 : 3} 
+          textAnchor={textAnchor} 
+          fill="#475569" 
+          fontSize={12} 
+          fontWeight={600}
+        >
+          {lines.map((line, i) => (
+            <tspan x={0} dy={i * 15} key={i}>{line}</tspan>
+          ))}
+        </text>
+      </g>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-800 animate-fadeIn px-4 text-center">
@@ -95,7 +136,7 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
   };
 
   return (
-    <div className="max-w-6xl mx-auto pb-12 animate-fadeIn w-full">
+    <div className="max-w-7xl mx-auto pb-12 animate-fadeIn w-full px-4 md:px-0">
       {/* Toast Notification */}
       {copied && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl z-50 flex items-center gap-3 animate-fadeIn w-max max-w-[90%] backdrop-blur-md border border-white/10">
@@ -105,7 +146,7 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
       )}
 
       {/* Header Banner */}
-      <div className="bg-slate-900 text-white rounded-3xl shadow-2xl overflow-hidden mb-8 mx-4 md:mx-0 relative">
+      <div className="bg-slate-900 text-white rounded-3xl shadow-2xl overflow-hidden mb-8 relative">
         {/* Background Gradients */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/30 rounded-full mix-blend-screen filter blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-blue-600/20 rounded-full mix-blend-screen filter blur-[80px] translate-y-1/2 -translate-x-1/4"></div>
@@ -132,7 +173,6 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
           <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-4 md:gap-1">
              <div className="text-left md:text-right">
                <div className="text-xs text-indigo-200 uppercase tracking-widest font-bold mb-1">Overall Score</div>
-               {/* SCORE ALIGNMENT FIX */}
                <div className="flex items-baseline gap-1.5 justify-start md:justify-end">
                   <span className={`text-5xl md:text-6xl font-black tracking-tighter ${report.overallScore >= 70 ? 'text-green-400' : report.overallScore >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
                     {report.overallScore}
@@ -153,205 +193,193 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 mx-4 md:mx-0">
+      {/* Main Layout Stack */}
+      <div className="flex flex-col space-y-8">
         
-        {/* Left Column: Visuals & Resume (4 cols) */}
-        <div className="lg:col-span-4 space-y-6 md:space-y-8">
-           
-           {/* Radar Chart Card */}
-           <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col h-[340px]">
-             <h3 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
-                <Star size={18} className="text-indigo-600"/> Performance Radar
-             </h3>
-             <div className="flex-1 -ml-6 w-[115%]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-                    <PolarGrid stroke="#e2e8f0" />
-                    <PolarAngleAxis dataKey="subject" tick={{fontSize: 10, fill: '#64748b', fontWeight: 600}} />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                    <Radar name="Score" dataKey="A" stroke="#4f46e5" strokeWidth={3} fill="#4f46e5" fillOpacity={0.15} />
-                  </RadarChart>
-                </ResponsiveContainer>
-             </div>
-           </div>
-           
-           {/* Resume & ATS Analysis Card */}
-           <div className="bg-white rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden group">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-bl-[100px] -mr-0 -mt-0 opacity-80 group-hover:scale-110 transition-transform duration-500"></div>
-             
-             <div className="p-6 relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                    <div>
-                        <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                           <FileText size={18} className="text-blue-600" />
-                           Resume Health
-                        </h3>
-                        <p className="text-xs text-slate-500 mt-1">ATS Compatibility Check</p>
-                    </div>
-                    <div className="text-right">
-                       <div className={`text-3xl font-black ${report.resumeAnalysis.atsScore >= 75 ? 'text-green-600' : 'text-amber-600'}`}>
-                          {report.resumeAnalysis.atsScore}
-                       </div>
-                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">ATS Score</div>
-                    </div>
-                </div>
+        {/* 1. Executive Summary (Full Width) */}
+        <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100">
+           <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+             <Activity size={16} /> Executive Summary
+           </h3>
+           <p className="text-base md:text-lg leading-relaxed text-slate-700 font-medium">
+             {report.overallSummary}
+           </p>
+        </div>
 
-                <div className="space-y-5">
-                   {/* Strengths */}
-                   <div className="space-y-2">
-                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-green-700/70 flex items-center gap-1.5">
-                         <CheckCircle size={12}/> Strong Matches
-                      </h4>
-                      <ul className="space-y-2">
-                         {report.resumeAnalysis.strengths.slice(0, 3).map((s, i) => (
-                            <li key={i} className="text-xs text-slate-700 bg-green-50/50 p-2 rounded-lg border border-green-100/50">
-                               {s}
-                            </li>
-                         ))}
-                      </ul>
-                   </div>
-                   
-                   {/* Weaknesses */}
-                   <div className="space-y-2">
-                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-amber-700/70 flex items-center gap-1.5">
-                         <AlertTriangle size={12}/> Missing Keywords
-                      </h4>
-                      <ul className="space-y-2">
-                         {report.resumeAnalysis.weaknesses.slice(0, 3).map((w, i) => (
-                            <li key={i} className="text-xs text-slate-700 bg-amber-50/50 p-2 rounded-lg border border-amber-100/50">
-                               {w}
-                            </li>
-                         ))}
-                      </ul>
-                   </div>
-                   
-                   {/* AI Tip */}
-                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100 mt-2">
-                      <h5 className="text-xs font-bold text-blue-800 mb-1.5 flex items-center gap-1.5"><Star size={12} fill="currentColor" /> Quick Fix</h5>
-                      <p className="text-xs text-blue-900/80 leading-relaxed font-medium">
-                         {report.resumeAnalysis.suggestions[0]}
-                      </p>
-                   </div>
-                </div>
-             </div>
-           </div>
-
-           {/* Executive Summary */}
-           <div className="bg-slate-800 text-slate-200 p-6 rounded-3xl shadow-lg border border-slate-700">
-             <h3 className="font-bold text-white mb-4 text-sm uppercase tracking-wide opacity-80">Executive Summary</h3>
-             <p className="text-sm leading-relaxed text-slate-300 font-light">{report.overallSummary}</p>
+        {/* 2. Performance Radar (Centerpiece) */}
+        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 flex flex-col items-center">
+           <h3 className="font-bold text-slate-800 text-xl mb-4 flex items-center gap-2 self-start md:self-center">
+              <Star size={20} className="text-indigo-600"/> Performance Radar
+           </h3>
+           <div className="w-full h-[400px] md:h-[500px] max-w-4xl">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart 
+                  cx="50%" 
+                  cy="50%" 
+                  outerRadius="70%" 
+                  data={chartData}
+                  margin={{ top: 20, right: 30, bottom: 20, left: 30 }}
+                >
+                  <PolarGrid stroke="#e2e8f0" />
+                  <PolarAngleAxis 
+                    dataKey="subject" 
+                    tick={renderCustomTick}
+                  />
+                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                  <Radar name="Score" dataKey="A" stroke="#4f46e5" strokeWidth={3} fill="#4f46e5" fillOpacity={0.2} />
+                </RadarChart>
+              </ResponsiveContainer>
            </div>
         </div>
 
-        {/* Middle/Right: Details (8 cols) */}
-        <div className="lg:col-span-8 space-y-6 md:space-y-8">
-          
-          {/* Detailed Scores Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             {report.categoryFeedback.map((cat, idx) => (
-               <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow group">
-                 <div className="flex justify-between items-start mb-4">
-                   <span className="font-bold text-slate-700 flex items-center gap-2.5">
-                     <span className="p-2 bg-slate-50 rounded-lg group-hover:bg-indigo-50 transition-colors">
-                        {cat.category === 'Visual Presence & Confidence' ? <Video size={16} className="text-purple-600" /> : <Star size={16} className="text-indigo-600" />}
-                     </span>
-                     {cat.category}
-                   </span>
-                   <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${getScoreColor(cat.score)}`}>
-                     {cat.score} / 100
-                   </span>
+        {/* 3. Detailed Scores Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+           {report.categoryFeedback.map((cat, idx) => (
+             <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+               <div className="flex justify-between items-start mb-4">
+                 <h4 className="font-bold text-slate-800 text-lg leading-tight w-3/4">
+                   {cat.category}
+                 </h4>
+                 <span className={`text-sm font-bold px-3 py-1 rounded-full border ${getScoreColor(cat.score)}`}>
+                   {cat.score} <span className="text-[10px] opacity-75">/ 100</span>
+                 </span>
+               </div>
+               
+               <div className="space-y-4">
+                 {cat.strengths.length > 0 && (
+                   <div className="bg-green-50/50 p-3 rounded-xl border border-green-100/50">
+                     <span className="text-green-700 font-bold text-xs uppercase block mb-1.5 flex items-center gap-1.5"><CheckCircle size={12}/> Strength</span>
+                     <p className="text-xs text-slate-600 leading-relaxed">{cat.strengths[0]}</p>
+                   </div>
+                 )}
+                 {cat.improvements.length > 0 && (
+                    <div className="bg-amber-50/50 p-3 rounded-xl border border-amber-100/50">
+                      <span className="text-amber-700 font-bold text-xs uppercase block mb-1.5 flex items-center gap-1.5"><AlertTriangle size={12}/> Suggestion</span>
+                      <p className="text-xs text-slate-600 leading-relaxed">{cat.improvements[0]}</p>
+                    </div>
+                 )}
+               </div>
+             </div>
+           ))}
+        </div>
+
+        {/* 4. Resume & Transcript Split */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+           
+           {/* Left: Resume Analysis */}
+           <div className="lg:col-span-1 h-full">
+              <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden h-full">
+                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 border-b border-slate-100">
+                    <div className="flex justify-between items-center mb-2">
+                       <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                          <FileText size={18} className="text-blue-600" /> Resume Health
+                       </h3>
+                       <div className={`text-2xl font-black ${report.resumeAnalysis.atsScore >= 75 ? 'text-green-600' : 'text-amber-600'}`}>
+                          {report.resumeAnalysis.atsScore} <span className="text-sm text-slate-400 font-medium">/ 100</span>
+                       </div>
+                    </div>
+                    <p className="text-xs text-slate-500">ATS Compatibility Score</p>
                  </div>
                  
-                 <div className="space-y-3">
-                   {cat.strengths.slice(0,1).map((s, i) => (
-                     <div key={i} className="flex gap-2 items-start text-xs text-slate-600">
-                       <CheckCircle size={14} className="text-green-500 shrink-0 mt-0.5" />
-                       <span>{s}</span>
-                     </div>
-                   ))}
-                   {cat.improvements.slice(0,1).map((s, i) => (
-                     <div key={i} className="flex gap-2 items-start text-xs text-slate-600">
-                       <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
-                       <span>{s}</span>
-                     </div>
-                   ))}
-                 </div>
-               </div>
-             ))}
-          </div>
-
-          {/* Q&A Breakdown */}
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-             <div className="p-6 border-b border-slate-100 bg-slate-50/30 flex items-center gap-3">
-               <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
-                  <BookOpen size={20} />
-               </div>
-               <div>
-                  <h3 className="font-bold text-slate-800">Transcript & Critique</h3>
-                  <p className="text-xs text-slate-500">Detailed question-by-question breakdown</p>
-               </div>
-             </div>
-             <div className="divide-y divide-slate-100">
-               {report.questionFeedback.map((q, i) => (
-                 <div key={i} className="p-6 hover:bg-slate-50/50 transition duration-300">
-                    <div className="flex gap-4 mb-4">
-                      <div className="text-xs font-bold bg-slate-100 text-slate-500 px-2.5 py-1 rounded-lg h-fit shrink-0 border border-slate-200">
-                        Q{i+1}
-                      </div>
-                      <p className="font-bold text-slate-800 text-sm md:text-base leading-snug">{q.question}</p>
+                 <div className="p-6 space-y-5">
+                    <div className="space-y-2">
+                       <h4 className="text-[11px] font-bold uppercase tracking-wider text-green-700/70">Matched Keywords</h4>
+                       <div className="flex flex-wrap gap-2">
+                          {report.resumeAnalysis.strengths.slice(0, 4).map((s, i) => (
+                             <span key={i} className="text-xs text-slate-700 bg-slate-50 px-2 py-1 rounded border border-slate-100">{s}</span>
+                          ))}
+                       </div>
                     </div>
                     
-                    <div className="pl-0 md:pl-12 space-y-4">
-                      <div className="bg-slate-50 border border-slate-100 p-4 rounded-xl text-sm text-slate-600 italic relative">
-                        <div className="absolute -top-2 left-4 px-2 bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Your Answer</div>
-                        "{q.userAnswer}"
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-green-50/50 p-3 rounded-xl border border-green-100/50">
-                          <span className="text-green-700 font-bold text-xs uppercase block mb-1.5 flex items-center gap-1.5"><CheckCircle size={12}/> Good</span>
-                          <span className="text-slate-600 text-xs leading-relaxed">{q.goodPoints}</span>
-                        </div>
-                        <div className="bg-amber-50/50 p-3 rounded-xl border border-amber-100/50">
-                           <span className="text-amber-700 font-bold text-xs uppercase block mb-1.5 flex items-center gap-1.5"><AlertTriangle size={12}/> Missing</span>
-                           <span className="text-slate-600 text-xs leading-relaxed">{q.missingPoints}</span>
-                        </div>
-                      </div>
+                    <div className="space-y-2">
+                       <h4 className="text-[11px] font-bold uppercase tracking-wider text-amber-700/70">Critical Gaps</h4>
+                       <div className="flex flex-wrap gap-2">
+                          {report.resumeAnalysis.weaknesses.slice(0, 3).map((w, i) => (
+                             <span key={i} className="text-xs text-slate-700 bg-amber-50 px-2 py-1 rounded border border-amber-100">{w}</span>
+                          ))}
+                       </div>
+                    </div>
 
-                      <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100/80">
-                        <span className="text-indigo-700 font-bold text-xs uppercase block mb-2">💡 Improved Answer Example</span>
-                        <p className="text-indigo-900/90 text-sm leading-relaxed">{q.improvedExample}</p>
-                      </div>
+                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                       <h5 className="text-xs font-bold text-blue-800 mb-1 flex items-center gap-1.5"><Star size={12} fill="currentColor" /> Quick Tip</h5>
+                       <p className="text-xs text-blue-900/80 leading-relaxed">{report.resumeAnalysis.suggestions[0]}</p>
                     </div>
                  </div>
-               ))}
-             </div>
-          </div>
-          
-          {/* Learning Roadmap */}
-          <div className="bg-slate-900 text-white p-6 md:p-8 rounded-3xl shadow-xl relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500 rounded-full mix-blend-overlay filter blur-[60px] opacity-20"></div>
-            
-             <h3 className="font-bold text-lg mb-6 relative z-10">Recommended Learning Path</h3>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
-              {report.learningRoadmap.slice(0, 4).map((item, i) => (
-                <div key={i} className="flex gap-4 items-start bg-white/5 p-4 rounded-2xl border border-white/10 hover:bg-white/10 transition">
-                   <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-sm shrink-0 shadow-lg shadow-indigo-500/30">
-                     {i+1}
+              </div>
+           </div>
+
+           {/* Right: Transcript & Critique */}
+           <div className="lg:col-span-2">
+              <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                 <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
+                   <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
+                      <BookOpen size={20} />
                    </div>
                    <div>
-                     <h4 className="font-bold text-sm text-indigo-100">{item.skill}</h4>
-                     <p className="text-xs text-slate-400 mt-1 leading-relaxed">{item.action}</p>
-                     <div className="mt-2.5 inline-flex px-2 py-1 bg-white/10 rounded-md text-[10px] uppercase font-bold tracking-wide text-white/70">
-                       {item.resourceType}
-                     </div>
+                      <h3 className="font-bold text-slate-800">Transcript Breakdown</h3>
+                      <p className="text-xs text-slate-500">Question-by-question analysis</p>
                    </div>
-                </div>
-              ))}
-            </div>
-          </div>
+                 </div>
+                 
+                 <div className="divide-y divide-slate-100">
+                   {report.questionFeedback.map((q, i) => (
+                     <div key={i} className="p-6 hover:bg-slate-50/30 transition">
+                        <div className="flex gap-4 mb-3">
+                          <span className="text-xs font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded h-fit border border-slate-200">Q{i+1}</span>
+                          <p className="font-bold text-slate-800 text-sm md:text-base">{q.question}</p>
+                        </div>
+                        
+                        <div className="pl-0 md:pl-10 space-y-4">
+                           <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100 italic relative">
+                              <span className="absolute -top-2 left-3 bg-slate-50 px-1 text-[10px] text-slate-400 font-bold uppercase">Your Answer</span>
+                              "{q.userAnswer}"
+                           </div>
 
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div>
+                                <h5 className="text-[11px] font-bold text-green-700 uppercase mb-1 flex items-center gap-1"><CheckCircle size={10}/> Good Points</h5>
+                                <p className="text-xs text-slate-600 leading-relaxed">{q.goodPoints}</p>
+                             </div>
+                             <div>
+                                <h5 className="text-[11px] font-bold text-amber-700 uppercase mb-1 flex items-center gap-1"><AlertTriangle size={10}/> Missed Opportunities</h5>
+                                <p className="text-xs text-slate-600 leading-relaxed">{q.missingPoints}</p>
+                             </div>
+                           </div>
+                           
+                           <div className="bg-indigo-50/50 p-3 rounded-lg border border-indigo-100">
+                              <h5 className="text-[11px] font-bold text-indigo-700 uppercase mb-1">💡 Better Approach</h5>
+                              <p className="text-xs text-indigo-900/80 leading-relaxed">{q.improvedExample}</p>
+                           </div>
+                        </div>
+                     </div>
+                   ))}
+                 </div>
+              </div>
+           </div>
         </div>
+
+        {/* 5. Learning Roadmap (Bottom Full Width) */}
+        <div className="bg-slate-900 text-white p-8 rounded-3xl shadow-xl relative overflow-hidden">
+           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20"></div>
+           <h3 className="font-bold text-xl mb-6 relative z-10">Recommended Learning Path</h3>
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
+            {report.learningRoadmap.slice(0, 4).map((item, i) => (
+              <div key={i} className="flex flex-col gap-3 bg-white/5 p-5 rounded-2xl border border-white/10 hover:bg-white/10 transition group">
+                 <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-sm shadow-lg shadow-indigo-500/30 group-hover:scale-110 transition-transform">
+                   {i+1}
+                 </div>
+                 <div>
+                   <h4 className="font-bold text-sm text-indigo-100 min-h-[40px]">{item.skill}</h4>
+                   <p className="text-xs text-slate-400 mt-2 leading-relaxed">{item.action}</p>
+                   <div className="mt-3 inline-flex px-2 py-1 bg-white/10 rounded text-[10px] uppercase font-bold tracking-wide text-white/70">
+                     {item.resourceType}
+                   </div>
+                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );

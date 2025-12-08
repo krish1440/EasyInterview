@@ -23,6 +23,10 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Refs for cleanup and race-condition prevention
+  const isMountedRef = useRef(true);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const { 
     isListening, 
@@ -40,24 +44,31 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     setIsLoading(true);
     setInitError(null);
     try {
-      // 1. Start Session (Handles Model Fallback internally: 2.5-flash -> 2.5-flash-lite)
+      // 1. Start Session
       const chat = await startInterviewSession(userDetails);
+      if (!isMountedRef.current) return;
       setChatSession(chat);
       
       // 2. Setup Camera
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        if (!isMountedRef.current) {
+          // If unmounted during request, stop immediately
+          mediaStream.getTracks().forEach(track => track.stop());
+          return;
+        }
         setStream(mediaStream);
-        // Note: The useEffect below will attach the stream to videoRef
+        streamRef.current = mediaStream; // Store in ref for cleanup
       } catch (e) {
         console.warn("Camera access denied", e);
-        setIsVideoEnabled(false);
+        if (isMountedRef.current) setIsVideoEnabled(false);
       }
 
       // 3. Send Context
       const firstQuestion = await sendInitialMessageWithResume(chat, userDetails);
+      if (!isMountedRef.current) return;
       
-      // Check if the response indicates a failure even after fallback
+      // Check if the response indicates a failure
       if (firstQuestion.startsWith("Error:")) {
         throw new Error(firstQuestion);
       }
@@ -70,20 +81,26 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
 
     } catch (error: any) {
       console.error("Failed to start interview", error);
-      // Only show error state if ALL fallbacks failed
-      setInitError(error.message || "Unable to connect to AI servers. Please check your network.");
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setInitError(error.message || "Unable to connect to AI servers. Please check your network.");
+        setIsLoading(false);
+      }
     }
   };
 
-  // Run on mount
+  // Lifecycle Management
   useEffect(() => {
+    isMountedRef.current = true;
     initializeInterview();
 
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+      isMountedRef.current = false; // Flag as unmounted to block async actions
+      
+      // Stop Camera
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
       }
+      // Stop Speech
       cancelSpeech();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -105,7 +122,7 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     }
   }, [isVideoEnabled, stream]);
 
-  // Sync transcript to input (but don't auto-send)
+  // Sync transcript to input
   useEffect(() => {
     if (isListening) {
       setInputValue(transcript);
@@ -135,11 +152,10 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     // 1. Capture content
     const userText = inputValue || transcript;
     
-    // 2. Stop Listening
+    // 2. Stop Listening & Reset
     stopListening();
     cancelSpeech();
 
-    // 3. Update UI
     const userMsg: Message = { role: 'user', text: userText, timestamp: Date.now() };
     setMessages(prev => [...prev, userMsg]);
     setInputValue('');
@@ -147,26 +163,35 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     setIsLoading(true);
 
     try {
-      // 4. Send to Gemini (Audio text + Video Frame)
+      // 3. Send to Gemini (Audio text + Video Frame)
       const imageFrame = captureFrame();
-
       const responseText = await sendMessageWithVideo(chatSession, userText, imageFrame);
       
-      // Handle mid-session errors gracefully
+      // CRITICAL: Check if component is still mounted before acting on response
+      if (!isMountedRef.current) return;
+
       if (responseText.startsWith("Error:")) {
          setMessages(prev => [...prev, { role: 'model', text: "I'm having trouble connecting right now. Please try tapping send again.", timestamp: Date.now() }]);
       } else {
          const modelText = responseText || "Could you please elaborate?";
          const modelMsg: Message = { role: 'model', text: modelText, timestamp: Date.now() };
          setMessages(prev => [...prev, modelMsg]);
-         if (isAudioEnabled) speak(modelText);
+         
+         // Only speak if we are still on this screen
+         if (isAudioEnabled && isMountedRef.current) {
+            speak(modelText);
+         }
       }
 
     } catch (error) {
       console.error("Chat error", error);
-      setMessages(prev => [...prev, { role: 'model', text: "Connection error. Please try again.", timestamp: Date.now() }]);
+      if (isMountedRef.current) {
+        setMessages(prev => [...prev, { role: 'model', text: "Connection error. Please try again.", timestamp: Date.now() }]);
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -176,7 +201,7 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
       handleSendMessage();
     } else {
       // User tapped "Speak" -> Start listening
-      cancelSpeech(); // Stop AI talking
+      cancelSpeech(); 
       setInputValue(''); 
       startListening();
     }
@@ -186,11 +211,9 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     const newState = !isAudioEnabled;
     setIsAudioEnabled(newState);
     if (newState) {
-      // Turning Audio ON: Start recording
       cancelSpeech();
       startListening();
     } else {
-      // Turning Audio OFF: Stop recording
       stopListening();
       cancelSpeech();
     }
@@ -378,7 +401,12 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
 
         <div className="shrink-0">
           <button 
-            onClick={() => { cancelSpeech(); onFinish(messages); }}
+            onClick={() => { 
+              cancelSpeech(); 
+              // Set unmounted flag indirectly by ensuring we stop here
+              isMountedRef.current = false;
+              onFinish(messages); 
+            }}
             className="flex items-center gap-2 px-3 py-2.5 md:px-4 md:py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-sm font-medium transition-colors"
             title="End Interview"
           >

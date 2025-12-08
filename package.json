@@ -13,7 +13,8 @@
     "react-dom": "^18.2.0",
     "lucide-react": "^0.330.0",
     "recharts": "^2.12.0",
-    "@google/genai": "*"
+    "@google/genai": "*",
+    "@vercel/analytics": "^1.4.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.55",

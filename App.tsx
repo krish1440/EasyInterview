@@ -6,6 +6,7 @@ import FeedbackStep from './components/FeedbackStep';
 import HomePage from './components/HomePage';
 import HistorySidebar from './components/HistorySidebar';
 import { LayoutGrid, History as HistoryIcon, User, Monitor, Laptop, Globe, Home, Linkedin, Github, Mail } from 'lucide-react';
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   const [currentStep, setCurrentStep] = useState<AppStep>(AppStep.HOME);
@@ -35,6 +36,7 @@ function App() {
 
   return (
     <>
+      <Analytics />
       {/* ---------------- MOBILE BLOCKER (Visible on screens < 1024px) ---------------- */}
       <div className="lg:hidden min-h-screen bg-slate-50 flex flex-col font-sans">
         
