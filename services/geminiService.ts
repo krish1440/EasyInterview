@@ -132,20 +132,36 @@ export const sendMessageWithVideo = async (
     });
     return response.text || "";
   } catch (error: any) {
-    // Check for Quota/Connection errors
-    const isQuotaError = error.status === 429 || error.code === 429 || 
-                         (error.message && (error.message.includes('429') || error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED')));
-    
-    if (error.status === 404 || (error.message && error.message.includes('404'))) {
-       activeModel = null; // Force re-check on next attempt
-       return "Error: Connection lost. Please try tapping send again.";
+    // Log full error for debugging
+    console.error("Gemini API Error:", error);
+
+    // Normalize error object (sometimes it's nested in error.error)
+    const errorObj = error.error || error;
+    const message = error.message || errorObj.message || JSON.stringify(error);
+
+    // 1. Check for Network / XHR / RPC errors
+    if (message.includes('xhr error') || message.includes('Rpc failed') || message.includes('fetch failed') || message.includes('NetworkError')) {
+       // Do not reset model cache for network errors, just inform user
+       return "Error: Network connection unstable. I couldn't receive your message. Please try sending again.";
     }
+
+    // 2. Check for Quota Exceeded (429)
+    const isQuotaError = error.status === 429 || error.code === 429 || 
+                         (message.includes('429') || message.includes('quota') || message.includes('RESOURCE_EXHAUSTED'));
     
     if (isQuotaError) {
        activeModel = null; // Clear active model so getWorkingModel tries the next one (Lite)
        return "Error: Daily quota exceeded for this model. Please tap Retry/Send to switch to the backup model.";
     }
-    throw error;
+
+    // 3. Check for 404 / Not Found
+    if (error.status === 404 || message.includes('404')) {
+       activeModel = null; // Force re-check on next attempt
+       return "Error: AI Service temporarily unavailable (404). Please try again.";
+    }
+    
+    // Default fallback
+    return "Error: Something went wrong. Please try again.";
   }
 };
 
@@ -172,8 +188,16 @@ export const sendInitialMessageWithResume = async (chat: Chat, userDetails: User
     });
     return response.text || "";
   } catch (error: any) {
+    const errorObj = error.error || error;
+    const message = error.message || errorObj.message || JSON.stringify(error);
+
+    // Network Errors
+    if (message.includes('xhr error') || message.includes('Rpc failed') || message.includes('fetch failed')) {
+       return "Error: Network connection failed. Please check your internet.";
+    }
+
     const isQuotaError = error.status === 429 || error.code === 429 || 
-                         (error.message && (error.message.includes('429') || error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED')));
+                         (message.includes('429') || message.includes('quota') || message.includes('RESOURCE_EXHAUSTED'));
 
     if (error.status === 404) {
        activeModel = null;
@@ -184,7 +208,8 @@ export const sendInitialMessageWithResume = async (chat: Chat, userDetails: User
        activeModel = null; // Reset so next try uses fallback
        return "Error: Quota exceeded. Please try again to switch models.";
     }
-    throw error;
+    
+    return "Error: Failed to initialize. Please check your connection.";
   }
 };
 

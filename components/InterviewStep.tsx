@@ -77,7 +77,10 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
       setMessages([initialMsg]);
       setIsLoading(false);
       
-      if (isAudioEnabled) speak(firstQuestion);
+      // Extra guard: Check mount status again before speaking
+      if (isAudioEnabled && isMountedRef.current) {
+        speak(firstQuestion);
+      }
 
     } catch (error: any) {
       console.error("Failed to start interview", error);
@@ -171,7 +174,8 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
       if (!isMountedRef.current) return;
 
       if (responseText.startsWith("Error:")) {
-         setMessages(prev => [...prev, { role: 'model', text: "I'm having trouble connecting right now. Please try tapping send again.", timestamp: Date.now() }]);
+         // Display the actual error message returned from service (e.g., "Network issue detected...")
+         setMessages(prev => [...prev, { role: 'model', text: responseText, timestamp: Date.now() }]);
       } else {
          const modelText = responseText || "Could you please elaborate?";
          const modelMsg: Message = { role: 'model', text: modelText, timestamp: Date.now() };
@@ -225,7 +229,7 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
 
   const getRollingCaption = (text: string) => {
     if (!text) return "";
-    const maxLength = 60;
+    const maxLength = 250;
     if (text.length <= maxLength) return text;
     return "..." + text.slice(-maxLength);
   };
@@ -348,7 +352,7 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
           
           {currentCaption && (
             <div className="absolute bottom-4 left-4 right-4 text-center z-20">
-              <div className="inline-block bg-black/70 text-white text-xs sm:text-sm px-3 py-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg max-w-full truncate">
+              <div className="inline-block bg-black/70 text-white text-xs sm:text-sm px-3 py-2 rounded-xl backdrop-blur-md border border-white/10 shadow-lg max-w-full whitespace-pre-wrap">
                 {currentCaption}
               </div>
             </div>

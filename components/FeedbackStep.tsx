@@ -165,7 +165,7 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
                  <span className="w-1 h-1 bg-slate-600 rounded-full"></span>
                  <span>{userDetails.language}</span>
                  <span className="w-1 h-1 bg-slate-600 rounded-full"></span>
-                 <span>{new Date().toLocaleDateString()}</span>
+                 <span>{new Date().toLocaleDateString('en-GB')}</span>
                </div>
             </div>
           </div>
