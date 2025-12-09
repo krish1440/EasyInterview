@@ -5,14 +5,30 @@ import { UserDetails, FeedbackReport } from "../types";
 // The API key must be obtained exclusively from process.env.API_KEY per guidelines.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-// PRIORITY LIST: Strictly restricted to user's available 2.5 models
+// PRIORITY LIST: 
+// 1. Flash 2.5 (Best performance)
+// 2. Flash Lite 2.5 (Backup for quota)
+// 3. Flash Lite Latest (Alias backup)
 const MODEL_PRIORITY_LIST = [
   'gemini-2.5-flash',
-  'gemini-2.5-flash-lite'
+  'gemini-2.5-flash-lite',
+  'gemini-flash-lite-latest'
 ];
 
 // Cache the working model so we don't check every time
 let activeModel: string | null = null;
+
+const isErrorQuotaRelated = (error: any): boolean => {
+  const msg = (error.message || JSON.stringify(error)).toLowerCase();
+  return (
+    error.status === 429 || 
+    error.code === 429 || 
+    msg.includes('429') || 
+    msg.includes('quota') || 
+    msg.includes('resource_exhausted') ||
+    msg.includes('exhausted')
+  );
+};
 
 // Helper to find a working model
 const getWorkingModel = async (): Promise<string> => {
@@ -24,15 +40,13 @@ const getWorkingModel = async (): Promise<string> => {
     try {
       console.log(`Testing model quota: ${model}...`);
       // CRITICAL FIX: Use generateContent instead of countTokens.
-      // countTokens does not consume 'generate_content' quota, so it gives false positives 
-      // when the daily limit (e.g., 20/day) is reached.
       // We send a minimal request to test the actual generation capability.
       await ai.models.generateContent({
         model: model,
         contents: [{ parts: [{ text: 'hi' }] }],
         config: { 
           maxOutputTokens: 1,
-          thinkingConfig: { thinkingBudget: 0 } // Disable thinking for probe to safe tokens and latency
+          // Removed thinkingConfig for probe to ensure maximum compatibility
         }
       });
       
@@ -40,14 +54,10 @@ const getWorkingModel = async (): Promise<string> => {
       activeModel = model;
       return model;
     } catch (error: any) {
-      // Check for Quota Exceeded (429) or Not Found (404)
-      const isQuotaError = error.status === 429 || error.code === 429 || 
-                           (error.message && (error.message.includes('429') || error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED')));
-      
-      if (isQuotaError) {
+      if (isErrorQuotaRelated(error)) {
         console.warn(`⚠️ Model ${model} QUOTA EXCEEDED. Switching to next...`);
       } else {
-        console.warn(`⚠️ Model ${model} failed check (Status: ${error.status || error.message}).`);
+        console.warn(`⚠️ Model ${model} failed check.`, error);
       }
       // Continue to next model in list
     }
@@ -61,6 +71,8 @@ const getWorkingModel = async (): Promise<string> => {
 export const startInterviewSession = async (userDetails: UserDetails): Promise<Chat> => {
   // 1. Determine which model to use dynamically
   const CHAT_MODEL = await getWorkingModel();
+  
+  console.log(`Starting session with model: ${CHAT_MODEL}`);
 
   const systemInstruction = `You are **Ava**, an expert HR interviewer and career coach conducting a video interview.
   
@@ -148,10 +160,7 @@ export const sendMessageWithVideo = async (
     }
 
     // 2. Check for Quota Exceeded (429)
-    const isQuotaError = error.status === 429 || error.code === 429 || 
-                         (message.includes('429') || message.includes('quota') || message.includes('RESOURCE_EXHAUSTED'));
-    
-    if (isQuotaError) {
+    if (isErrorQuotaRelated(error)) {
        activeModel = null; // Clear active model so getWorkingModel tries the next one (Lite)
        return "Error: Daily quota exceeded for this model. Please tap Retry/Send to switch to the backup model.";
     }
@@ -190,6 +199,7 @@ export const sendInitialMessageWithResume = async (chat: Chat, userDetails: User
     });
     return response.text || "";
   } catch (error: any) {
+    console.error("Initial Connection Error:", error);
     const errorObj = error.error || error;
     const message = error.message || errorObj.message || JSON.stringify(error);
 
@@ -198,20 +208,18 @@ export const sendInitialMessageWithResume = async (chat: Chat, userDetails: User
        return "Error: Network connection failed. Please check your internet.";
     }
 
-    const isQuotaError = error.status === 429 || error.code === 429 || 
-                         (message.includes('429') || message.includes('quota') || message.includes('RESOURCE_EXHAUSTED'));
-
     if (error.status === 404) {
        activeModel = null;
        return "Error: Model not found (404). Please check configuration.";
     }
     
-    if (isQuotaError) {
+    if (isErrorQuotaRelated(error)) {
        activeModel = null; // Reset so next try uses fallback
        return "Error: Quota exceeded. Please try again to switch models.";
     }
     
-    return "Error: Failed to initialize. Please check your connection.";
+    // Improved error reporting
+    return `Error: Failed to initialize. (${message.substring(0, 100)}...)`;
   }
 };
 

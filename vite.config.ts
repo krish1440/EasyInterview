@@ -5,7 +5,7 @@ export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   // The third argument '' ensures we load all variables, not just those with VITE_ prefix,
   // though we are specifically looking for VITE_GEMINI_API_KEY.
-  const env = loadEnv(mode, process.cwd(), '');
+  const env = loadEnv(mode, (process as any).cwd(), '');
 
   return {
     plugins: [react()],
