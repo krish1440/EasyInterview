@@ -8,26 +8,45 @@ import HistorySidebar from './components/HistorySidebar';
 import { LayoutGrid, History as HistoryIcon, User, Monitor, Laptop, Globe, Home, Linkedin, Github, Mail } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/react";
 
+/**
+ * App Component
+ * 
+ * The root component of the EasyInterview application.
+ * Manages the high-level application state, including:
+ * - Current navigation step (Home, Setup, Interview, Feedback).
+ * - Global candidate profile data.
+ * - Conversation transcript persistence for the current session.
+ * - History sidebar visibility.
+ * 
+ * Also handles the responsive layout logic, specifically blocking mobile devices 
+ * that don't meet the hardware requirements for real-time video analysis.
+ * 
+ * @returns {JSX.Element} The rendered application shell.
+ */
 function App() {
   const [currentStep, setCurrentStep] = useState<AppStep>(AppStep.HOME);
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [transcript, setTranscript] = useState<Message[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
+  /** Transitions the app to the setup phase */
   const handleStart = () => {
     setCurrentStep(AppStep.SETUP);
   };
 
+  /** Stores candidate details and starts the interview phase */
   const handleSetupComplete = (details: UserDetails) => {
     setUserDetails(details);
     setCurrentStep(AppStep.INTERVIEW);
   };
 
+  /** Stores the final conversation and moves to the feedback phase */
   const handleInterviewFinish = (msgs: Message[]) => {
     setTranscript(msgs);
     setCurrentStep(AppStep.FEEDBACK);
   };
 
+  /** Resets global state to return to the landing page */
   const handleRestart = () => {
     setCurrentStep(AppStep.HOME);
     setUserDetails(null);
@@ -37,10 +56,9 @@ function App() {
   return (
     <>
       <Analytics />
-      {/* ---------------- MOBILE BLOCKER (Visible on screens < 1024px) ---------------- */}
+      
+      {/* Mobile Blocker - Desktop Requirement Enforcement */}
       <div className="lg:hidden min-h-screen bg-slate-50 flex flex-col font-sans">
-        
-        {/* Main Content Centered */}
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-indigo-200">
              <Monitor size={40} className="text-indigo-600" />
@@ -72,10 +90,8 @@ function App() {
           </div>
         </div>
 
-        {/* Footer for Mobile (Matches Desktop Footer) */}
         <div className="bg-white border-t border-slate-200 py-8 w-full">
             <div className="flex flex-col items-center justify-center gap-6 px-6">
-                {/* Social Icons */}
                 <div className="flex items-center gap-6">
                   <a 
                     href="https://www.linkedin.com/in/krish-chaudhary-krc8252" 
@@ -116,9 +132,8 @@ function App() {
         </div>
       </div>
 
-      {/* ---------------- DESKTOP APP (Visible on screens >= 1024px) ---------------- */}
+      {/* Desktop Application Interface */}
       <div className="hidden lg:flex min-h-screen bg-slate-50 flex-col font-sans text-slate-900">
-        {/* Navbar */}
         <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
           <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
             <div className="flex items-center gap-2 cursor-pointer group" onClick={handleRestart}>
@@ -166,10 +181,8 @@ function App() {
           </div>
         </header>
 
-        {/* Main Content */}
         <main className="flex-1 max-w-7xl w-full mx-auto px-8 py-8">
           
-          {/* Progress Stepper - Only show if NOT on Home Page */}
           {currentStep !== AppStep.HOME && (
             <div className="flex justify-center mb-10">
               <div className="flex items-center gap-3 text-sm font-medium bg-white px-6 py-3 rounded-full shadow-sm border border-slate-100">
@@ -203,11 +216,8 @@ function App() {
           )}
         </main>
 
-        {/* Footer */}
         <footer className="bg-white border-t border-slate-200 py-12 mt-auto">
           <div className="max-w-7xl mx-auto px-8 flex flex-col items-center justify-center gap-6">
-            
-            {/* Social Icons */}
             <div className="flex items-center gap-6">
               <a 
                 href="https://www.linkedin.com/in/krish-chaudhary-krc8252" 
@@ -247,10 +257,8 @@ function App() {
           </div>
         </footer>
 
-        {/* History Sidebar */}
         <HistorySidebar isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} />
         
-        {/* Overlay */}
         {isHistoryOpen && (
           <div 
             className="fixed inset-0 bg-slate-900/20 z-40 backdrop-blur-sm transition-opacity"
