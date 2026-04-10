@@ -5,11 +5,28 @@ import { useSpeech } from '../hooks/useSpeech';
 import { Mic, Send, Video, VideoOff, PhoneOff, Volume2, VolumeX, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Chat } from "@google/genai";
 
+/**
+ * Properties for the InterviewStep component.
+ */
 interface InterviewStepProps {
+  /** The professional profile and settings for the candidate */
   userDetails: UserDetails;
+  /** Callback triggered when the interview concludes, returning the full conversation transcript */
   onFinish: (transcript: Message[]) => void;
 }
 
+/**
+ * InterviewStep Component
+ * 
+ * The core engine of the interview experience. It manages:
+ * - Real-time video/audio streaming and UI rendering.
+ * - Integration with Gemini AI via multimodal message handling (text + snapshots).
+ * - Speech-to-text (STT) and Text-to-speech (TTS) synchronization.
+ * - Interview lifecycle management (init, active phase, cleanup).
+ * 
+ * @param {InterviewStepProps} props - Component properties.
+ * @returns {JSX.Element} The active interview interface.
+ */
 const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatSession, setChatSession] = useState<Chat | null>(null);
@@ -23,8 +40,6 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  // Refs for cleanup and race-condition prevention
   const isMountedRef = useRef(true);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -39,36 +54,35 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     cancelSpeech 
   } = useSpeech();
 
-  // Initialize Interview Function
+  /**
+   * Orchestrates the initialization of the AI chat session and local media devices.
+   * Handles error states such as camera access denial or API connection failures.
+   * @async
+   */
   const initializeInterview = async () => {
     setIsLoading(true);
     setInitError(null);
     try {
-      // 1. Start Session
       const chat = await startInterviewSession(userDetails);
       if (!isMountedRef.current) return;
       setChatSession(chat);
       
-      // 2. Setup Camera
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         if (!isMountedRef.current) {
-          // If unmounted during request, stop immediately
           mediaStream.getTracks().forEach(track => track.stop());
           return;
         }
         setStream(mediaStream);
-        streamRef.current = mediaStream; // Store in ref for cleanup
+        streamRef.current = mediaStream;
       } catch (e) {
         console.warn("Camera access denied", e);
         if (isMountedRef.current) setIsVideoEnabled(false);
       }
 
-      // 3. Send Context
       const firstQuestion = await sendInitialMessageWithResume(chat, userDetails);
       if (!isMountedRef.current) return;
       
-      // Check if the response indicates a failure
       if (firstQuestion.startsWith("Error:")) {
         throw new Error(firstQuestion);
       }
@@ -77,7 +91,6 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
       setMessages([initialMsg]);
       setIsLoading(false);
       
-      // Extra guard: Check mount status again before speaking
       if (isAudioEnabled && isMountedRef.current) {
         speak(firstQuestion);
       }
@@ -91,33 +104,26 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     }
   };
 
-  // Lifecycle Management
   useEffect(() => {
     isMountedRef.current = true;
     initializeInterview();
 
     return () => {
-      isMountedRef.current = false; // Flag as unmounted to block async actions
-      
-      // Stop Camera
+      isMountedRef.current = false;
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
-      // Stop Speech
       cancelSpeech();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sync Video Stream to Video Element when visibility changes
   useEffect(() => {
     if (stream) {
-      // Toggle track to save resources/privacy when "off"
       stream.getVideoTracks().forEach(track => {
         track.enabled = isVideoEnabled;
       });
 
-      // Re-attach to DOM element if currently visible
       if (isVideoEnabled && videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.play().catch(e => console.log("Video play error:", e));
@@ -125,18 +131,22 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     }
   }, [isVideoEnabled, stream]);
 
-  // Sync transcript to input
   useEffect(() => {
     if (isListening) {
       setInputValue(transcript);
     }
   }, [transcript, isListening]);
 
-  // Scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
+  /**
+   * Captures a single frame from the live video stream and returns it as a base64 string.
+   * Used for sending visual context to the AI model.
+   * 
+   * @returns {string | null} Base64 encoded JPEG data or null if video is disabled.
+   */
   const captureFrame = (): string | null => {
     if (!videoRef.current || !canvasRef.current || !isVideoEnabled) return null;
     const context = canvasRef.current.getContext('2d');
@@ -149,13 +159,16 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     return null;
   };
 
+  /**
+   * Processes the user's textual input, captures visual context, and sends it to the AI.
+   * Updates conversation state and triggers AI voice response upon success.
+   * @async
+   */
   const handleSendMessage = async () => {
     if ((!inputValue.trim() && !transcript.trim()) || !chatSession) return;
 
-    // 1. Capture content
     const userText = inputValue || transcript;
     
-    // 2. Stop Listening & Reset
     stopListening();
     cancelSpeech();
 
@@ -166,22 +179,18 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     setIsLoading(true);
 
     try {
-      // 3. Send to Gemini (Audio text + Video Frame)
       const imageFrame = captureFrame();
       const responseText = await sendMessageWithVideo(chatSession, userText, imageFrame);
       
-      // CRITICAL: Check if component is still mounted before acting on response
       if (!isMountedRef.current) return;
 
       if (responseText.startsWith("Error:")) {
-         // Display the actual error message returned from service (e.g., "Network issue detected...")
          setMessages(prev => [...prev, { role: 'model', text: responseText, timestamp: Date.now() }]);
       } else {
          const modelText = responseText || "Could you please elaborate?";
          const modelMsg: Message = { role: 'model', text: modelText, timestamp: Date.now() };
          setMessages(prev => [...prev, modelMsg]);
          
-         // Only speak if we are still on this screen
          if (isAudioEnabled && isMountedRef.current) {
             speak(modelText);
          }
@@ -199,18 +208,22 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     }
   };
 
+  /**
+   * Toggles the audio recording state and handles message transmission upon completion.
+   */
   const toggleRecording = () => {
     if (isListening) {
-      // User tapped "Done" -> Send message
       handleSendMessage();
     } else {
-      // User tapped "Speak" -> Start listening
       cancelSpeech(); 
       setInputValue(''); 
       startListening();
     }
   };
 
+  /**
+   * Toggles TTS and STT functionality.
+   */
   const toggleAudio = () => {
     const newState = !isAudioEnabled;
     setIsAudioEnabled(newState);
@@ -223,10 +236,18 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
     }
   };
 
+  /**
+   * Toggles camera stream visibility and track activity.
+   */
   const toggleVideo = () => {
     setIsVideoEnabled(!isVideoEnabled);
   };
 
+  /**
+   * Generates a trimmed version of the transcript for real-time captioning.
+   * @param {string} text - Raw transcript text.
+   * @returns {string} Truncated string suitable for captions.
+   */
   const getRollingCaption = (text: string) => {
     if (!text) return "";
     const maxLength = 250;
@@ -236,7 +257,6 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
 
   const currentCaption = getRollingCaption(transcript || inputValue);
 
-  // --- ERROR STATE UI ---
   if (initError) {
     return (
       <div className="flex flex-col h-[calc(100vh-80px)] bg-black text-white rounded-xl overflow-hidden shadow-2xl border border-slate-800 items-center justify-center p-6 text-center">
@@ -271,18 +291,14 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
   return (
     <div className="flex flex-col h-[calc(100vh-80px)] bg-black text-white rounded-xl overflow-hidden shadow-2xl border border-slate-800">
       
-      {/* --- Main Visual Area --- */}
       <div className="flex-1 flex flex-col md:flex-row relative overflow-hidden">
         
-        {/* 1. AI Persona / Active Speaker */}
         <div className="flex-1 bg-slate-900/50 relative border-b md:border-b-0 md:border-r border-slate-800 flex flex-col min-h-[40%] md:min-h-auto">
-          {/* Header */}
           <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-xs font-medium tracking-wider text-slate-400 uppercase">Ava (AI Coach)</span>
           </div>
 
-          {/* AI Visualization */}
           <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
             <div className={`w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 rounded-full flex items-center justify-center transition-all duration-500 ${isSpeaking ? 'bg-indigo-500/20 scale-110 shadow-[0_0_60px_rgba(99,102,241,0.3)]' : 'bg-slate-800'}`}>
               <div className={`w-16 h-16 sm:w-24 sm:h-24 md:w-36 md:h-36 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg relative`}>
@@ -308,7 +324,6 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
             </p>
           </div>
 
-          {/* Chat Transcript Overlay */}
           <div className="h-1/3 min-h-[120px] bg-black/40 backdrop-blur-md p-3 md:p-4 overflow-y-auto custom-scrollbar border-t border-white/5">
             <div className="space-y-3">
               {messages.map((msg, idx) => (
@@ -322,7 +337,6 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
           </div>
         </div>
 
-        {/* 2. User Video Feed */}
         <div className="h-[200px] sm:h-[250px] md:h-auto md:w-1/3 bg-black relative border-t md:border-t-0 md:border-l border-slate-800 shrink-0">
            {isVideoEnabled ? (
             <video 
@@ -362,7 +376,6 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
         </div>
       </div>
 
-      {/* --- Control Bar --- */}
       <div className="h-auto py-3 md:h-24 bg-slate-900 border-t border-slate-800 flex flex-row items-center justify-between px-4 md:px-8 shrink-0 relative z-30 gap-3">
         
         <div className="flex items-center gap-2 md:gap-4 shrink-0">
@@ -407,7 +420,6 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
           <button 
             onClick={() => { 
               cancelSpeech(); 
-              // Set unmounted flag indirectly by ensuring we stop here
               isMountedRef.current = false;
               onFinish(messages); 
             }}
