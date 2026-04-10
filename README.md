@@ -1,304 +1,207 @@
 # 🚀 EasyInterview – Your Personal AI Interview Coach
 
+<div align="center">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/Google_Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Gemini AI" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind" />
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+</div>
+
+<br />
+
 **AI-Driven • Real-Time • Multimodal Interview Coaching**
 
 Train smarter. Interview stronger. Perform better — anytime, anywhere (24/7).
 
 ---
 
-> **EasyInterview** is an AI-driven, real-time mock interview and career coaching platform designed to replicate realistic interview environments for job candidates.
->
-> Built with **React** and powered by **Google Gemini 2.5 Multimodal AI**, EasyInterview combines:
-> - Voice-based interview simulation  
-> - Webcam-powered behavioral analysis  
-> - Resume and role intelligence
+## 📖 Table of Contents
+- [✨ Key Features](#-key-features)
+- [🎯 Mission](#-mission)
+- [🧩 System Architecture](#-system-architecture)
+- [🔁 Interview Experience Workflow](#-interview-experience-workflow)
+- [📊 Performance Analytics](#-performance-analytics)
+- [🛠️ Technology Stack](#-technology-stack)
+- [📂 Project Structure](#-project-structure)
+- [🚀 Quick Start](#-quick-start)
+- [🔐 Privacy & Security](#-privacy--security)
+- [🛣️ Future Roadmap](#-future-roadmap)
 
-All delivered through an interactive AI recruiter named **“Ava.”**
+---
+
+## ✨ Key Features
+
+> **EasyInterview** is an AI-driven, real-time mock interview and career coaching platform designed to replicate realistic interview environments for job candidates.
+
+Built with **React** and powered by **Google Gemini 1.5/2.0 Multimodal AI**, EasyInterview combines:
+- 🎙️ **Voice-based interview simulation** with natural cadence.
+- 🎥 **Webcam-powered behavioral analysis** (posture, eye contact).
+- 📄 **Resume and role intelligence** for personalized questioning.
+- 🤖 **Meet "Ava"**, your interactive AI recruiter and coach.
 
 ---
 
 ## 🎯 Mission
 
 Bridge the gap between **interview preparation** and **real-world performance** using:
-
-- Data-driven coaching feedback  
-- Continuous voice practice  
-- Webcam-based non-verbal analysis  
-- Resume-aware customization  
-- Personalized improvement roadmaps
+- **Data-driven coaching feedback** based on AI scoring.
+- **Continuous voice practice** to eliminate filler words and hesitation.
+- **Webcam-based non-verbal analysis** for professional presence.
+- **Resume-aware customization** to target specific job requirements.
+- **Personalized improvement roadmaps** for structured growth.
 
 ---
 
 ## ✅ Core Objectives
 
-- Provide **realistic interview training** without the need for human interviewers  
-- Build confidence via **continuous voice-based mock sessions**  
-- Improve non-verbal skills through **real-time webcam coaching**  
-- Deliver tailored prep using **resume + job description analysis**  
-- Replace generic tips with **actionable, skill-based insights**
+- Provide **realistic interview training** without the need for human interviewers.
+- Build confidence via **continuous voice-based mock sessions**.
+- Improve non-verbal skills through **real-time webcam coaching**.
+- Deliver tailored prep using **resume + job description analysis**.
+- Replace generic tips with **actionable, skill-based insights**.
 
 ---
 
 ## 🧩 System Architecture
 
----
+### 🖥️ Frontend Layer (Interface)
+- **Engine**: Built using **React 18** for a reactive, fast UI.
+- **Media**: Live webcam integration & continuous microphone streaming.
+- **UX**: Immersive interview UI featuring real-time transcriptions & adaptive question flow.
+- **Coaching**: Live confidence & posture alerts rendered via subtle UI overlays.
 
-### 🖥️ Frontend Layer
-- Built using **React**
-- Live webcam integration  
-- Continuous microphone streaming  
-- Immersive interview UI featuring:
-  - 🤖 AI recruiter avatar — **Ava**  
-  - 💬 Real-time transcriptions & responses  
-  - 🔀 Adaptive question flow  
-  - ✅ Live confidence & posture alerts
+### 🧠 AI Orchestration Layer (Brain)
+- **Power**: Driven by **Google Gemini 2.0 Multimodal AI**.
+- **Inputs**: Processes voice speech, live video snapshots, and text-based resume context.
+- **Role**: Coordinates NLP, vision analysis, and interview logic in real-time.
 
----
-
-### 🧠 AI Orchestration Layer
-
-Powered by **Google Gemini 2.5 Multimodal AI**
-
-Processes:
-- 🎤 Voice speech input  
-- 🎥 Webcam image streams  
-- 📄 Resume & job description context  
-
-Acts as the system brain coordinating NLP, vision analysis, and interview logic.
-
----
-
-### 🔊 Speech Processing Pipeline
-
-- **Speech-to-Text (STT)**  
-  Converts spoken responses into transcripts
-
-- **Natural Language Understanding (NLU)**  
-  Scores clarity, relevance, and coherence
-
-- **Gemini Interview Engine**  
-  Generates contextual recruiter responses
-
-- **Text-to-Speech (TTS)**  
-  Produces natural interviewer voice output
-
----
-
-### 👁️ Visual Intelligence Pipeline
-
-Webcam frame analysis for:
-
-- Eye gaze focus stability  
-- Head pose alignment  
-- Body posture balance  
-- Facial micro-expression detection  
-
-Live scoring of:
-
-- Engagement levels  
-- Confidence indicators  
-
-Real-time posture and eye-contact corrections shown during interviews.
+### 🔊 Speech & Vision Pipeline
+- **Speech-to-Text (STT)**: High-accuracy conversion of candidate responses.
+- **NLU (Natural Language Understanding)**: Scores clarity, relevance, and technical depth.
+- **Visual Intelligence**: Analyzes eye gaze, head pose, and body posture balance.
 
 ---
 
 ## 🔁 Interview Experience Workflow
 
 ### End-to-End Mock Interview Journey
+`Resume Upload` ➡️ `Profile Analysis` ➡️ `Dynamic Question Generation` ➡️ `Live Voice Interview` ➡️ `Webcam Monitoring` ➡️ `AI Evaluation` ➡️ `Full Analytics Report`
 
-**Resume Upload → Profile Analysis → Dynamic Question Generation →  
-Live Voice Interview → Webcam Monitoring → AI Evaluation →  
-Full Analytics Report**
-
----
-
-### 🧭 Process Steps
-
-- Upload **resume & job description**
-- AI extracts:
-  - Skill requirements
-  - Role competencies
-  - Interview keywords
-
-- Generates a custom interview flow
-
-- Conducts live sessions using:
-  - 🎤 Voice conversation with **Ava**
-  - 🎥 Visual behavior tracking
-
-- Evaluates:
-  - Answer relevance  
-  - Communication clarity  
-  - Behavioral confidence
-
-- Delivers an instant analytics report
-
----
-
-## ⚙️ Key Capabilities
-
----
-
-### 🎙️ Real-Time Voice Interviewing
-
-- Near-zero-latency speech recognition  
-- Fully hands-free conversations  
-- Human-like recruiter voice responses  
-- Multi-turn memory across interviews  
-- Difficulty auto-scaling based on performance
-
----
-
-### 🧠 Multimodal Visual Intelligence
-
-- Real-time posture detection  
-- Eye-contact verification engine  
-- Facial emotion mapping  
-- Confidence scoring algorithms
-
-**Live coaching alerts for:**
-
-- Looking away from the camera  
-- Leaning or slouched posture  
-- Low engagement cues
-
----
-
-## 📄 Resume & Context Intelligence
-
-- Resume parsing and formatting normalization  
-- ATS gap detection vs targeted job roles  
-- Keyword clustering for missing skills
-
-**AI-generated interview design includes:**
-
-- Technical scenarios  
-- Behavioral questions  
-- Problem-solving simulations
-
-**Continuous resume-improvement guidance included.**
+### 🧭 Detailed Process Steps
+1. **Context Initialization**: Upload your resume and job description.
+2. **AI Extraction**: Ava extracts skill requirements and role competencies.
+3. **Session Conduct**: Engage in a 🎤 voice conversation while 🎥 visual behavior is tracked.
+4. **Holistic Evaluation**: AI evaluates relevance, communication, and confidence.
+5. **Instant Analytics**: Receive a multidimensional report immediately after finish.
 
 ---
 
 ## 📊 Performance Analytics Dashboard
 
----
-
 ### 📈 Performance Radar
-
-Tracks candidate ability across:
-
-- Communication clarity  
-- Technical depth  
-- Logical problem-solving  
-- Professional confidence  
-- Body presence & expressiveness
-
----
+Tracks candidate ability across 5 critical dimensions:
+- **Communication Clarity**
+- **Technical Depth**
+- **Logical Problem-Solving**
+- **Professional Confidence**
+- **Body Presence & Expressiveness**
 
 ### 📝 Question-Level Evaluation
-
-Per-answer scoring provides:
-
-- Linguistic clarity metrics  
-- Relevance ranking  
-- Behavioral positivity index  
-- AI-generated ideal answer comparisons
-
----
+- **Linguistic Clarity**: How well did you articulate your ideas?
+- **Relevance Ranking**: Did you answer the specific question asked?
+- **Ideal Comparisons**: AI-generated examples of "perfect" answers.
 
 ### 🧪 Resume Health Diagnostics
-
-- ATS compatibility percentage score  
-- Job mismatch keyword analysis  
-- Role-skill alignment heatmaps  
-- Resume optimization recommendations
+- **ATS Compatibility**: Score based on standard recruiter filters.
+- **Skill Heatmaps**: Identifying gaps between your resume and the target JD.
 
 ---
 
-### 🛤️ Personal Learning Roadmap
+## 📂 Project Structure
 
-- Weakness prioritization maps  
-- Weekly improvement schedules  
-- Practice challenges  
-- Resource recommendations  
-- Precision-targeted mock sessions
+```bash
+EasyInterview/
+├── public/                 # Static assets
+├── src/
+│   ├── components/         # Core UI Components
+│   │   ├── HomePage.tsx    # Onboarding & Landing
+│   │   ├── SetupStep.tsx   # Config & Resume Upload
+│   │   ├── Interview.tsx   # Active Multimodal Session
+│   │   └── Feedback.tsx    # Post-session Reports
+│   ├── services/           
+│   │   └── geminiService.ts # Gemini AI Orchestration Layer
+│   ├── hooks/
+│   │   └── useSpeech.ts    # STT / TTS Custom Logic
+│   ├── types.ts            # Centralized Interface Definitions
+│   ├── utils.ts            # Helper Utilities
+│   └── App.tsx             # Main Application Routing
+├── .env                    # Environment Config (API Keys)
+├── vite.config.ts          # Build Configuration
+└── README.md               # You are here!
+```
 
 ---
 
-## 💬 Interactive Coaching Experience
+## 🚀 Quick Start
 
-- Natural spoken conversations with **Ava**
-- AI-adjusted interview pacing
-- Real-time body-language nudges
-- Stress-response modulation
+### 1. Prerequisites
+- Node.js (v18+)
+- A Google Cloud API Key for **Gemini AI**
 
-**Exportable reports:**
+### 2. Installation
+```bash
+# Clone the repository
+git clone https://github.com/krish1440/EasyInterview.git
 
-- 📄 PDF analytics reports  
-- 📈 Skill-tracking sheets  
-- 📝 Interview transcripts
+# Install dependencies
+npm install
 
----
+# Create .env file
+touch .env
+```
 
-## 👤 User Model
+### 3. Environment Setup
+Add your Gemini API Key to `.env`:
+```env
+VITE_GEMINI_API_KEY=your_actual_key_here
+```
 
-- Single-user personal training platform  
-- No admin or recruiter dashboards  
-- Fully optimized for individual career growth  
-- Secure cloud-managed sessions
+### 4. Run Development Server
+```bash
+npm run dev
+```
 
 ---
 
 ## 🔐 Privacy & Security
 
-- Webcam analysis processed locally when possible  
-- No video recordings stored unless user opts in  
-- Encrypted speech transcripts  
-- GDPR-compliant data-retention policies  
-- Secure document-handling pipelines
+- **Local Processing**: Webcam visual checks for posture are transient and designed for real-time feedback.
+- **No Storage**: No video recordings are stored on our servers; only text transcripts are used for final scoring.
+- **Encryption**: All data streams between the client and AI are TLS encrypted.
+- **Compliance**: Designed with GDPR data-retention best practices in mind.
 
 ---
 
 ## 🛣️ Future Roadmap
 
-- 🌍 Multilingual interview support  
-- 👥 Panel interview simulations  
-- 🏢 Company-specific interviewer personalities  
-- ❤️ Emotion-aware conversational branching  
-- 😰 Stress conditioning modules  
-- 📦 Industry-specialized question banks
+- [ ] **🌍 Multilingual**: Support for interviews in 10+ languages.
+- [ ] **👥 Panel Simulation**: Mocking multiple interviewers at once.
+- [ ] **🏢 Company Personas**: Modeling personalities like "Stressful Recruiter" or "Technical Architect."
+- [ ] **😰 Stress Conditioning**: Introducing distractions or aggressive questioning to test composure.
+- [ ] **📦 Specialized Banks**: Industry-specific (FAANG, Big 4, Startups) question modules.
 
 ---
 
 ## 🛠️ Technology Stack
 
-### Frontend
-- React  
-- WebRTC  
-- MediaStream APIs  
-- Web Speech APIs
-
----
-
-### AI & NLP
-- Google Gemini 2.5 Multimodal  
-- Speech-to-Text engines  
-- Natural Language evaluation pipelines
-
----
-
-### Data Analytics
-- Vector skill-scoring models  
-- Score normalization algorithms  
-- Radar visualization engines
-
----
-
-### Security
-- TLS encrypted streams  
-- End-to-end secured uploads  
-- Anonymized analytics datasets
+| Category | Technologies |
+| :--- | :--- |
+| **Frontend** | React, TypeScript, Tailwind CSS, Lucide Icons |
+| **Core Engine** | Google Gemini Multimodal SDK |
+| **Media** | MediaStream API, Web Speech API (STT/TTS) |
+| **Charts** | Recharts (Radar/Grid) |
+| **Build Tool** | Vite |
 
 ---
 
@@ -306,11 +209,14 @@ Per-answer scoring provides:
 
 **EasyInterview transforms interview preparation into measurable performance science.**
 
-✅ Confidence through real simulation  
-✅ Faster growth via targeted AI coaching  
-✅ Personalized learning journeys  
-✅ 24/7 unlimited career preparation
+- ✅ **Confidence** through realistic, high-pressure simulation.
+- ✅ **Efficiency** via targeted AI coaching on your specific weaknesses.
+- ✅ **Personalization** through deep resume/JD integration.
+- ✅ **Availability** with 24/7 unlimited access to your personal recruiter.
 
 ---
 
-### **Train Smarter. Interview Stronger. Succeed Faster.**
+<div align="center">
+  <h3><b>Train Smarter. Interview Stronger. Succeed Faster.</b></h3>
+  <p>© 2024 EasyInterview - Built for the next generation of top performers.</p>
+</div>
