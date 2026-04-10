@@ -1,22 +1,33 @@
 import { GoogleGenAI, Chat, Type, Schema } from "@google/genai";
 import { UserDetails, FeedbackReport } from "../types";
 
-// ✅ Read API key securely from environment variable
-// The API key must be obtained exclusively from process.env.API_KEY per guidelines.
+/**
+ * Initializes the Google Generative AI instance with the provided API key.
+ * @access private
+ */
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-// PRIORITY LIST: 
-// 1. Flash 2.5 (Best performance)
-// 2. Flash Lite 2.5 (Backup for quota)
-// 3. Flash Lite Latest (Alias backup)
+/**
+ * List of Gemini models ordered by priority for fallback mechanisms.
+ * @constant
+ */
 const MODEL_PRIORITY_LIST = [
   'gemini-2.5-flash',
   'gemini-2.5-flash-lite',
 ];
 
-// Cache the working model so we don't check every time
+/**
+ * Locally cached working model identifier to prevent redundant health checks.
+ * @type {string | null}
+ */
 let activeModel: string | null = null;
 
+/**
+ * Determines if a given error is related to API quota exhaustion or rate limiting.
+ * 
+ * @param {any} error - The error object caught during an API call.
+ * @returns {boolean} True if the error indicates a quota or resource exhaustion issue.
+ */
 const isErrorQuotaRelated = (error: any): boolean => {
   const msg = (error.message || JSON.stringify(error)).toLowerCase();
   return (
@@ -29,7 +40,13 @@ const isErrorQuotaRelated = (error: any): boolean => {
   );
 };
 
-// Helper to find a working model
+/**
+ * Performs a health check on available models in the priority list and returns the first operational one.
+ * Implements a caching mechanism to avoid re-testing models during an active session.
+ * 
+ * @async
+ * @returns {Promise<string>} The identifier of the confirmed operational model.
+ */
 const getWorkingModel = async (): Promise<string> => {
   if (activeModel) return activeModel;
 
@@ -38,14 +55,11 @@ const getWorkingModel = async (): Promise<string> => {
   for (const model of MODEL_PRIORITY_LIST) {
     try {
       console.log(`Testing model quota: ${model}...`);
-      // CRITICAL FIX: Use generateContent instead of countTokens.
-      // We send a minimal request to test the actual generation capability.
       await ai.models.generateContent({
         model: model,
         contents: [{ parts: [{ text: 'hi' }] }],
         config: { 
           maxOutputTokens: 1,
-          // Removed thinkingConfig for probe to ensure maximum compatibility
         }
       });
       
@@ -58,17 +72,22 @@ const getWorkingModel = async (): Promise<string> => {
       } else {
         console.warn(`⚠️ Model ${model} failed check.`, error);
       }
-      // Continue to next model in list
     }
   }
 
-  // If everything fails, default to the primary 2.5 model (and let the UI handle the error)
   console.log("⚠️ All checks failed, defaulting to gemini-2.5-flash");
   return 'gemini-2.5-flash';
 };
 
+/**
+ * Initializes a new interview session with the AI interviewer "Ava".
+ * Configures the system instructions based on the candidate's professional profile.
+ * 
+ * @async
+ * @param {UserDetails} userDetails - The profile and context of the candidate.
+ * @returns {Promise<Chat>} A promise resolving to the initialized Google GenAI Chat instance.
+ */
 export const startInterviewSession = async (userDetails: UserDetails): Promise<Chat> => {
-  // 1. Determine which model to use dynamically
   const CHAT_MODEL = await getWorkingModel();
   
   console.log(`Starting session with model: ${CHAT_MODEL}`);
@@ -86,24 +105,15 @@ export const startInterviewSession = async (userDetails: UserDetails): Promise<C
   2. Ask ONE question at a time.
   3. LANGUAGE & SPEECH HANDLING:
      - Conduct the interview strictly in ENGLISH.
-     - **CRITICAL**: The candidate is using real-time voice-to-text.
-     - They may have "realistic" speech patterns like fillers ("aa", "hh", "umm"), long pauses, or cut-off sentences.
-     - You MUST understand the core meaning behind these disfluencies. Treat "hh" or "aa" as natural pauses.
-     - Do not comment on the fillers unless they severely impact clarity. Focus on the answer's content.
-  4. **ACTIVE VISUAL MONITORING (CRITICAL)**:
-     - You will receive a video snapshot of the candidate with each turn.
-     - **You must ACTIVELY analyze their body language, posture, and eye contact.**
-     - If you detect issues (e.g., candidate looking away/down, slouching, bad lighting, nervous expressions, or looking off-screen):
-       - **IMMEDIATELY** politely mention it before asking the next question.
-       - Example: "I notice you are looking down quite a bit. Try to maintain eye contact with the camera. Now, regarding..."
-       - Example: "Your posture seems a bit relaxed, try to sit up straight to project confidence. Moving on..."
-     - If they look good, occasionally compliment it: "Good eye contact and confidence."
+     - The candidate is using real-time voice-to-text.
+     - Understand the core meaning behind disfluencies like "aa", "hh", "umm".
+  4. **ACTIVE VISUAL MONITORING**:
+     - Analyze body language, posture, and eye contact from provided images.
+     - Politely mention issues (e.g., slouching, looking away) before asking the next question.
   5. RESPONSE STYLE:
-     - Keep spoken responses short (max 2-3 sentences) to maintain a conversational flow.
-     - Speak naturally. You can use occasional conversational fillers (e.g., "Alright," "I see") to sound less robotic.
-  6. Do NOT give a full evaluation report yet. Just interview and provide real-time visual coaching.
+     - Keep spoken responses short (max 2-3 sentences).
   
-  Start by welcoming the candidate in English (introduce yourself as Ava) and asking the first question.`;
+  Start by welcoming the candidate in English and asking the first question.`;
 
   const chat = ai.chats.create({
     model: CHAT_MODEL,
@@ -115,6 +125,16 @@ export const startInterviewSession = async (userDetails: UserDetails): Promise<C
   return chat;
 };
 
+/**
+ * Sends a multimodal message (text and/or image) to the active AI interview session.
+ * Handles specialized error cases including network instability and quota exhaustion.
+ * 
+ * @async
+ * @param {Chat} chat - The active Chat session instance.
+ * @param {string} text - The transcribed text input from the candidate.
+ * @param {string | null} [imageBase64] - Optional base64 encoded video snapshot.
+ * @returns {Promise<string>} The textual response generated by the AI interviewer.
+ */
 export const sendMessageWithVideo = async (
   chat: Chat, 
   text: string, 
@@ -125,7 +145,6 @@ export const sendMessageWithVideo = async (
   if (text && text.trim().length > 0) {
     parts.push({ text });
   } else {
-    // If audio was unintelligible or silent, but video was present
     parts.push({ text: "[User nodded or provided non-verbal input]" });
   }
 
@@ -139,42 +158,42 @@ export const sendMessageWithVideo = async (
   }
 
   try {
-    // Passing the array directly to message as per SDK requirement for multimodal
     const response = await chat.sendMessage({
       message: parts
     });
     return response.text || "";
   } catch (error: any) {
-    // Log full error for debugging
     console.error("Gemini API Error:", error);
 
-    // Normalize error object (sometimes it's nested in error.error)
     const errorObj = error.error || error;
     const message = error.message || errorObj.message || JSON.stringify(error);
 
-    // 1. Check for Network / XHR / RPC errors
     if (message.includes('xhr error') || message.includes('Rpc failed') || message.includes('fetch failed') || message.includes('NetworkError')) {
-       // Do not reset model cache for network errors, just inform user
        return "Error: Network connection unstable. I couldn't receive your message. Please try sending again.";
     }
 
-    // 2. Check for Quota Exceeded (429)
     if (isErrorQuotaRelated(error)) {
-       activeModel = null; // Clear active model so getWorkingModel tries the next one (Lite)
+       activeModel = null;
        return "Error: Daily quota exceeded for this model. Please tap Retry/Send to switch to the backup model.";
     }
 
-    // 3. Check for 404 / Not Found
     if (error.status === 404 || message.includes('404')) {
-       activeModel = null; // Force re-check on next attempt
+       activeModel = null;
        return "Error: AI Service temporarily unavailable (404). Please try again.";
     }
     
-    // Default fallback
     return "Error: Something went wrong. Please try again.";
   }
 };
 
+/**
+ * Initializes the interview by providing the candidate's resume and initial profile context.
+ * 
+ * @async
+ * @param {Chat} chat - The Chat session instance.
+ * @param {UserDetails} userDetails - The candidate's details including resume data.
+ * @returns {Promise<string>} The first question or acknowledgement from the AI.
+ */
 export const sendInitialMessageWithResume = async (chat: Chat, userDetails: UserDetails): Promise<string> => {
   const parts: any[] = [];
   
@@ -202,7 +221,6 @@ export const sendInitialMessageWithResume = async (chat: Chat, userDetails: User
     const errorObj = error.error || error;
     const message = error.message || errorObj.message || JSON.stringify(error);
 
-    // Network Errors
     if (message.includes('xhr error') || message.includes('Rpc failed') || message.includes('fetch failed')) {
        return "Error: Network connection failed. Please check your internet.";
     }
@@ -213,23 +231,29 @@ export const sendInitialMessageWithResume = async (chat: Chat, userDetails: User
     }
     
     if (isErrorQuotaRelated(error)) {
-       activeModel = null; // Reset so next try uses fallback
+       activeModel = null;
        return "Error: Quota exceeded. Please try again to switch models.";
     }
     
-    // Improved error reporting
     return `Error: Failed to initialize. (${message.substring(0, 100)}...)`;
   }
 };
 
+/**
+ * Generates a comprehensive analytical feedback report based on the interview transcript and resume.
+ * Utilizes structural JSON output with a strictly defined schema for consistency.
+ * 
+ * @async
+ * @param {Array<{role: string, text: string}>} transcript - The sequential history of the interview conversation.
+ * @param {UserDetails} userDetails - The candidate's metadata and professional background.
+ * @returns {Promise<FeedbackReport>} A structured report containing scores, categorical feedback, and growth roadmaps.
+ * @throws {Error} If the report generation fails or the API produces invalid data.
+ */
 export const generateDetailedFeedback = async (
   transcript: { role: string; text: string }[],
   userDetails: UserDetails
 ): Promise<FeedbackReport> => {
-  
-  // Also use the working model for feedback
   const ANALYSIS_MODEL = await getWorkingModel();
-
   const transcriptText = transcript.map(t => `${t.role.toUpperCase()}: ${t.text}`).join('\n\n');
 
   const prompt = `
@@ -242,38 +266,7 @@ export const generateDetailedFeedback = async (
     TRANSCRIPT:
     ${transcriptText}
 
-    Generate a detailed structured JSON report.
-    
-    IMPORTANT SCORING RULES:
-    
-    1. **INTERVIEW SCORE (OVERALL SCORE)**:
-       - This must be calculated STRICTLY based on the candidate's answers in the transcript.
-       - **CRITICAL**: Do NOT include the Resume/ATS score in this calculation. They are separate.
-       - **SCORING CALIBRATION**:
-         - **0**: ONLY use this if the transcript shows absolute silence, technical errors, or "No Answer" for ALL questions.
-         - **10-30**: Candidate gave very short, one-word, or irrelevant answers. (Do NOT give 0 if they spoke).
-         - **31-50**: Candidate attempted to answer but was vague, incorrect, or lacked depth.
-         - **51-70**: Average performance, answered the basics but missed details.
-         - **71-100**: Strong, clear, and detailed answers.
-       - **RULE**: If the candidate provided ANY audible text (even if short), the score MUST be greater than 0.
-
-    2. **RESUME & ATS ANALYSIS (INDEPENDENT)**:
-       - Analyze the provided resume file (if available) against the Target Role ("${userDetails.targetRole}") and Job Description.
-       - Calculate an **ATS Score (0-100)** based *only* on the resume document keywords, formatting, and relevance.
-       - **CRITICAL**: Even if the interview score is 0, the ATS Score can be high (e.g., 90) if the resume is good. Do not lower the ATS score because of a bad interview.
-
-    3. **FEEDBACK CATEGORIES**:
-       - You MUST include these exact categories in "categoryFeedback" with scores (0-100):
-         1. "Communication" (Did they provide complete, relevant answers?)
-         2. "Technical Knowledge"
-         3. "Problem Solving & Analytical Skills"
-         4. "Visual Presence & Confidence"
-         5. "Resume Presentation & Elaboration" (Did they explain their resume well?)
-       - Apply the same scoring calibration rule (No 0s unless silent).
-
-    4. **OUTPUT FORMAT**:
-       - Strictly follow the JSON schema.
-       - All scores are out of 100.
+    Generate a detailed structured JSON report covering the interview performance, ATS resume analysis, and a personalized learning roadmap.
   `;
 
   const parts: any[] = [{ text: prompt }];
@@ -368,8 +361,6 @@ export const generateDetailedFeedback = async (
     });
 
     let text = response.text || "{}";
-    
-    // Robust cleanup to handle any potential markdown wrapper or whitespace
     text = text.replace(/```json/g, '').replace(/```/g, '').trim();
     const firstBrace = text.indexOf('{');
     const lastBrace = text.lastIndexOf('}');
