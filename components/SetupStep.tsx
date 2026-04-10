@@ -3,10 +3,26 @@ import { UserDetails } from '../types';
 import { fileToBase64 } from '../utils';
 import { Upload, Briefcase, ChevronRight, Check, Play } from 'lucide-react';
 
+/**
+ * Properties for the SetupStep component.
+ */
 interface SetupStepProps {
+  /** Callback function invoked when the configuration phase is successfully completed */
   onComplete: (details: UserDetails) => void;
 }
 
+/**
+ * SetupStep Component
+ * 
+ * Orchestrates the configuration phase of the interview. 
+ * Responsibilities include:
+ * - Capturing candidate profile information (Name, Role, Experience).
+ * - Processing resume uploads and converting them to base64 for AI consumption.
+ * - Collecting job description context to customize the interview questions.
+ * 
+ * @param {SetupStepProps} props - Component properties.
+ * @returns {JSX.Element} The rendered configuration form.
+ */
 const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
   const [formData, setFormData] = useState<UserDetails>({
     name: '',
@@ -21,11 +37,20 @@ const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
   });
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Updates the local form state for standard input elements.
+   * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>} e - Change event.
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  /**
+   * Processes the resume file selection, converts it to base64, and updates state.
+   * @async
+   * @param {React.ChangeEvent<HTMLInputElement>} e - File input change event.
+   */
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -44,6 +69,10 @@ const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
     }
   };
 
+  /**
+   * Validates the configuration and completes the setup phase.
+   * @param {React.FormEvent} e - Form submission event.
+   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.targetRole) {
@@ -67,7 +96,6 @@ const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
       <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
         <form onSubmit={handleSubmit} className="p-5 md:p-10 space-y-6 md:space-y-8">
           
-          {/* Section 1: Core Details */}
           <div>
             <h3 className="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 md:mb-6 flex items-center gap-2">
               <span className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px] md:text-xs">1</span>
@@ -126,7 +154,6 @@ const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
 
           <hr className="border-slate-100" />
 
-          {/* Section 2: Context */}
           <div>
             <h3 className="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 md:mb-6 flex items-center gap-2">
               <span className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px] md:text-xs">2</span>
@@ -134,7 +161,6 @@ const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-               {/* Job Description */}
                <div className="space-y-1.5 md:space-y-3">
                   <label className="text-xs md:text-sm font-semibold text-slate-700">Job Description (Optional)</label>
                   <textarea
@@ -147,7 +173,6 @@ const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
                   />
                </div>
 
-               {/* Resume Upload */}
                <div className="space-y-1.5 md:space-y-3">
                   <label className="text-xs md:text-sm font-semibold text-slate-700">Upload Resume</label>
                   <div className={`h-32 md:h-40 border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-center transition-all cursor-pointer group ${formData.resumeFile ? 'border-blue-500 bg-blue-50' : 'border-slate-300 hover:border-blue-400 hover:bg-slate-50'}`}>
