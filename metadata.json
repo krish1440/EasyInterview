@@ -1,8 +1,23 @@
 {
   "name": "EasyInterview",
-  "description": "A comprehensive interview preparation tool for mock interviews, resume analysis, and personalized feedback.",
+  "version": "1.2.0",
+  "author": "Krish Chaudhary",
+  "description": "Enterprise-grade AI interview coach featuring real-time multimodal (voice + vision) coaching and resume intelligence.",
+  "keywords": [
+    "AI",
+    "Interview Coach",
+    "Career Tool",
+    "Gemini AI",
+    "React"
+  ],
+  "license": "MIT",
   "requestFramePermissions": [
     "microphone",
     "camera"
-  ]
+  ],
+  "features": {
+    "voiceInteraction": true,
+    "visualCoaching": true,
+    "resumeAnalysis": true
+  }
 }
