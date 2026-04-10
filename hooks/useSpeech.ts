@@ -1,11 +1,30 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-// Define types for Web Speech API
+/**
+ * Extended Window interface to accommodate the Web Speech API vendor-specific implementations.
+ * @access private
+ */
 interface IWindow extends Window {
   webkitSpeechRecognition: any;
   SpeechRecognition: any;
 }
 
+/**
+ * useSpeech Custom Hook
+ * 
+ * A comprehensive hook for managing multimodal speech interactions (STT and TTS).
+ * 
+ * Key Features:
+ * - **Robust Speech-to-Text (STT)**: Implements an infinite stream listener with a 
+ *   "Lossless Restart Strategy" to handle browser-forced timeouts safely.
+ * - **Smart Keepalive**: Proactively restarts the recognition service during silence 
+ *   to reset internal 60s browser timers.
+ * - **Text-to-Speech (TTS)**: Manages synthesized voice output with automatic 
+ *   buffer handling and markdown symbol cleaning.
+ * - **Context State**: Exposes real-time transcript data and activity flags.
+ * 
+ * @returns {object} Speech control methods and status states.
+ */
 export const useSpeech = () => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -16,14 +35,10 @@ export const useSpeech = () => {
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const speakTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
-  // Ref to store the committed final text
   const finalTranscriptRef = useRef('');
-  // Ref to store interim text to rescue it on restart
   const interimTranscriptRef = useRef('');
-  // Ref to track explicit user intent to stop
   const isManuallyStoppedRef = useRef(false);
 
-  // TIMING REFS FOR SMART KEEPALIVE
   const lastSpeechTimestampRef = useRef<number>(Date.now());
   const recognitionStartTimeRef = useRef<number>(0);
 
@@ -38,18 +53,12 @@ export const useSpeech = () => {
       recognition.lang = 'en-US';
 
       recognition.onstart = () => {
-        // Reset the start time whenever recognition begins/restarts
         recognitionStartTimeRef.current = Date.now();
         lastSpeechTimestampRef.current = Date.now();
       };
       
       recognition.onend = () => {
-        // Infinite stream: if not manually stopped, restart immediately.
         if (recognitionRef.current && !isManuallyStoppedRef.current) {
-           // LOSSLESS RESTART STRATEGY:
-           // If the browser cuts off while there is pending interim text (gray text),
-           // we rescue it by appending it to the final transcript before restarting.
-           // This prevents "missing words" during the restart cycle.
            if (interimTranscriptRef.current.trim()) {
              const prefix = finalTranscriptRef.current.length > 0 ? ' ' : '';
              finalTranscriptRef.current += prefix + interimTranscriptRef.current.trim();
@@ -60,7 +69,6 @@ export const useSpeech = () => {
            try {
              recognition.start();
            } catch (e) {
-             // If start fails (e.g. firing too fast), retry after short delay
              setTimeout(() => {
                 if (!isManuallyStoppedRef.current && recognitionRef.current) {
                    try { recognitionRef.current.start(); } catch(e) {}
@@ -68,47 +76,38 @@ export const useSpeech = () => {
              }, 100);
            }
         } else {
-           // Only update UI state if it was a manual stop
            setIsListening(false);
         }
       };
 
       recognition.onresult = (event: any) => {
-        // Update activity timestamp whenever speech is detected
         lastSpeechTimestampRef.current = Date.now();
-        
         let interim = '';
 
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           const chunk = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            // If final, add to our permanent buffer with a space to prevent merging
             const prefix = finalTranscriptRef.current.length > 0 ? ' ' : '';
             finalTranscriptRef.current += prefix + chunk.trim();
-            interimTranscriptRef.current = ''; // Clear interim as it is now finalized
+            interimTranscriptRef.current = '';
           } else {
-            // If interim, store it temporarily
             interim += chunk;
           }
         }
 
-        // Save interim to ref in case we crash/restart before it becomes final
         if (interim) {
            interimTranscriptRef.current = interim;
         }
 
-        // Display = Committed Final Text + Current Interim Text
         setTranscript(finalTranscriptRef.current + (interim ? ' ' + interim : ''));
       };
 
       recognition.onerror = (event: any) => {
-        // Ignore non-fatal errors to keep the loop alive
         if (event.error === 'no-speech' || event.error === 'network' || event.error === 'aborted') {
            return;
         }
         
         if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-           // If permission denied, force UI to stop
            setIsListening(false);
            isManuallyStoppedRef.current = true;
            return;
@@ -120,7 +119,6 @@ export const useSpeech = () => {
       recognitionRef.current = recognition;
     }
     
-    // Voice pre-loading
     const loadVoices = () => {
        if (synthRef.current) {
          synthRef.current.getVoices();
@@ -131,7 +129,6 @@ export const useSpeech = () => {
        window.speechSynthesis.onvoiceschanged = loadVoices;
     }
     
-    // Cleanup on unmount
     return () => {
       if (speakTimeoutRef.current) clearTimeout(speakTimeoutRef.current);
       if (synthRef.current) synthRef.current.cancel();
@@ -143,10 +140,10 @@ export const useSpeech = () => {
 
   }, []);
 
-  // SMART KEEPALIVE INTERVAL
-  // Browsers usually kill speech recognition after ~60 seconds.
-  // We proactively restart it during a SILENCE period (after 45s of running)
-  // to avoid a hard cut-off mid-sentence.
+  /**
+   * Interval-based hook to proactively restart the recognition engine.
+   * Prevents browser timeouts by resetting the internal 60-second limit during moments of silence.
+   */
   useEffect(() => {
     const intervalId = setInterval(() => {
       if (isListening && !isManuallyStoppedRef.current && recognitionRef.current) {
@@ -154,11 +151,8 @@ export const useSpeech = () => {
          const sessionDuration = now - recognitionStartTimeRef.current;
          const timeSinceLastSpeech = now - lastSpeechTimestampRef.current;
 
-         // If running for > 45 seconds AND user has been silent for > 1 second
          if (sessionDuration > 45000 && timeSinceLastSpeech > 1000) {
             console.log("Proactive restart during silence to reset browser timer...");
-            // Stopping triggers 'onend', which automatically restarts due to our logic above.
-            // This resets the browser's internal 60s timer safely during silence.
             recognitionRef.current.stop(); 
          }
       }
@@ -167,18 +161,17 @@ export const useSpeech = () => {
     return () => clearInterval(intervalId);
   }, [isListening]);
 
+  /**
+   * Initiates the microphone listener and clears temporary buffers.
+   */
   const startListening = useCallback(() => {
     if (recognitionRef.current) {
       try {
         isManuallyStoppedRef.current = false;
-        // Reset buffers for a fresh turn
         finalTranscriptRef.current = '';
         interimTranscriptRef.current = '';
         setTranscript('');
-        
-        // VISUAL FIX: Set UI to listening immediately.
         setIsListening(true);
-        
         recognitionRef.current.start();
       } catch (e: any) {
         if (e.name === 'InvalidStateError' || e.message?.includes('already started')) {
@@ -190,6 +183,9 @@ export const useSpeech = () => {
     }
   }, []);
 
+  /**
+   * Stops the microphone listener immediately.
+   */
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
       isManuallyStoppedRef.current = true;
@@ -198,12 +194,18 @@ export const useSpeech = () => {
     }
   }, []);
 
+  /**
+   * Resets the local transcript storage.
+   */
   const resetTranscript = useCallback(() => {
      finalTranscriptRef.current = '';
      interimTranscriptRef.current = '';
      setTranscript('');
   }, []);
 
+  /**
+   * Cancels any active or queued synthesized speech outputs.
+   */
   const cancelSpeech = useCallback(() => {
     if (speakTimeoutRef.current) {
       clearTimeout(speakTimeoutRef.current);
@@ -215,6 +217,10 @@ export const useSpeech = () => {
     }
   }, []);
 
+  /**
+   * Synthesizes provided text into audible speech using selected high-quality system voices.
+   * @param {string} text - The raw text to be spoken.
+   */
   const speak = useCallback((text: string) => {
     if (synthRef.current) {
       if (speakTimeoutRef.current) clearTimeout(speakTimeoutRef.current);
