@@ -1,17 +1,29 @@
 import React from 'react';
 import { Play, Mic, Video, FileText, BarChart2, Zap, BrainCircuit, ArrowRight, ShieldCheck } from 'lucide-react';
 
+/**
+ * Properties for the HomePage component.
+ */
 interface HomePageProps {
+  /** Callback function triggered when the user initiates the practice session */
   onStart: () => void;
 }
 
+/**
+ * HomePage Component
+ * 
+ * Serves as the landing destination for the EasyInterview platform. 
+ * Features a high-impact hero section, a grid outlining key AI capabilities 
+ * (Visual analysis, Speech coaching, Resume ATS), and a three-step instructional guide.
+ * 
+ * @param {HomePageProps} props - Component properties including the start session callback.
+ * @returns {JSX.Element} The rendered landing page.
+ */
 const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
   return (
     <div className="flex flex-col animate-fadeIn">
       
-      {/* Hero Section */}
       <div className="relative overflow-hidden rounded-3xl bg-slate-900 text-white p-8 md:p-16 mb-12 shadow-2xl border border-slate-800">
-        {/* Abstract Background Shapes */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-600/20 rounded-full mix-blend-screen filter blur-[120px] -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-600/20 rounded-full mix-blend-screen filter blur-[100px] translate-y-1/3 -translate-x-1/4"></div>
 
@@ -46,7 +58,6 @@ const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
         </div>
       </div>
 
-      {/* Features Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-indigo-100 hover:shadow-md transition-all group">
           <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 mb-4 group-hover:scale-110 transition-transform">
@@ -79,7 +90,6 @@ const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
         </div>
       </div>
 
-      {/* How it Works */}
       <div className="mb-16">
         <div className="text-center mb-10">
           <h2 className="text-3xl font-bold text-slate-900 tracking-tight">How It Works</h2>
@@ -87,10 +97,8 @@ const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-          {/* Connector Line (Desktop) */}
           <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-slate-200 via-indigo-200 to-slate-200 -z-10"></div>
 
-          {/* Step 1 */}
           <div className="flex flex-col items-center text-center">
             <div className="w-24 h-24 bg-white border-4 border-slate-50 rounded-full flex items-center justify-center shadow-lg mb-6 relative z-10">
               <div className="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center text-white font-bold text-2xl">1</div>
@@ -101,7 +109,6 @@ const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
             </p>
           </div>
 
-          {/* Step 2 */}
           <div className="flex flex-col items-center text-center">
             <div className="w-24 h-24 bg-white border-4 border-slate-50 rounded-full flex items-center justify-center shadow-lg mb-6 relative z-10">
               <div className="w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-2xl">2</div>
@@ -112,7 +119,6 @@ const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
             </p>
           </div>
 
-          {/* Step 3 */}
           <div className="flex flex-col items-center text-center">
             <div className="w-24 h-24 bg-white border-4 border-slate-50 rounded-full flex items-center justify-center shadow-lg mb-6 relative z-10">
               <div className="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center text-white font-bold text-2xl">3</div>
@@ -125,7 +131,6 @@ const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
         </div>
       </div>
 
-      {/* Trust Badge */}
       <div className="bg-slate-50 rounded-2xl p-8 text-center border border-slate-100">
          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
             <div className="flex items-center gap-2 font-bold text-slate-700">
