@@ -209,13 +209,14 @@ const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
             <button
               type="submit"
               disabled={loading}
+              aria-label="Start your AI Video Interview session"
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3 text-base md:text-lg"
             >
               {loading ? (
                 <>Setting up Environment...</>
               ) : (
                 <>
-                  Start Video Interview <Play size={18} className="md:w-5 md:h-5" fill="currentColor" />
+                  Start Video Interview <Play size={18} aria-hidden="true" className="md:w-5 md:h-5" fill="currentColor" />
                 </>
               )}
             </button>
