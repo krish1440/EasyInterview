@@ -45,10 +45,12 @@ const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
 
           <button 
             onClick={onStart}
+            aria-label="Start your AI interview practice session"
+            title="Start your AI interview practice session"
             className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-indigo-900 rounded-full font-bold text-lg shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] hover:scale-105 transition-all duration-300 overflow-hidden"
           >
             <span className="relative z-10">Start Your Practice Session</span>
-            <ArrowRight size={20} className="relative z-10 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight size={20} aria-hidden="true" className="relative z-10 group-hover:translate-x-1 transition-transform" />
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-50 to-white opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </button>
           
@@ -58,10 +60,10 @@ const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+      <section aria-label="Key Features" className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-indigo-100 hover:shadow-md transition-all group">
           <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 mb-4 group-hover:scale-110 transition-transform">
-            <Video size={24} />
+            <Video size={24} aria-hidden="true" />
           </div>
           <h3 className="text-lg font-bold text-slate-900 mb-2">Visual Presence Analysis</h3>
           <p className="text-slate-500 text-sm leading-relaxed">
@@ -71,7 +73,7 @@ const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
 
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-blue-100 hover:shadow-md transition-all group">
           <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
-            <Mic size={24} />
+            <Mic size={24} aria-hidden="true" />
           </div>
           <h3 className="text-lg font-bold text-slate-900 mb-2">Speech & Clarity Coaching</h3>
           <p className="text-slate-500 text-sm leading-relaxed">
@@ -81,14 +83,14 @@ const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
 
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:border-purple-100 hover:shadow-md transition-all group">
           <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600 mb-4 group-hover:scale-110 transition-transform">
-            <FileText size={24} />
+            <FileText size={24} aria-hidden="true" />
           </div>
           <h3 className="text-lg font-bold text-slate-900 mb-2">Resume & ATS Integration</h3>
           <p className="text-slate-500 text-sm leading-relaxed">
             Upload your resume to get tailored questions. We also provide an ATS compatibility score and improvement suggestions.
           </p>
         </div>
-      </div>
+      </section>
 
       <div className="mb-16">
         <div className="text-center mb-10">
