@@ -381,21 +381,27 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
         <div className="flex items-center gap-2 md:gap-4 shrink-0">
           <button 
             onClick={toggleAudio}
+            aria-label={isAudioEnabled ? "Disable microphone and speakers" : "Enable microphone and speakers"}
+            title={isAudioEnabled ? "Disable Audio" : "Enable Audio"}
             className={`p-2.5 md:p-3 rounded-full transition-all ${isAudioEnabled ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-red-500/20 text-red-500'}`}
           >
-            {isAudioEnabled ? <Volume2 size={18} className="md:w-5 md:h-5" /> : <VolumeX size={18} className="md:w-5 md:h-5" />}
+            {isAudioEnabled ? <Volume2 size={18} aria-hidden="true" className="md:w-5 md:h-5" /> : <VolumeX size={18} aria-hidden="true" className="md:w-5 md:h-5" />}
           </button>
           <button 
             onClick={toggleVideo}
+            aria-label={isVideoEnabled ? "Disable video camera" : "Enable video camera"}
+            title={isVideoEnabled ? "Disable Video" : "Enable Video"}
             className={`p-2.5 md:p-3 rounded-full transition-all ${isVideoEnabled ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-red-500/20 text-red-500'}`}
           >
-            {isVideoEnabled ? <Video size={18} className="md:w-5 md:h-5" /> : <VideoOff size={18} className="md:w-5 md:h-5" />}
+            {isVideoEnabled ? <Video size={18} aria-hidden="true" className="md:w-5 md:h-5" /> : <VideoOff size={18} aria-hidden="true" className="md:w-5 md:h-5" />}
           </button>
         </div>
 
         <div className="flex-1 flex justify-center md:absolute md:left-1/2 md:-translate-x-1/2 md:flex-none">
           <button
             onClick={toggleRecording}
+            aria-label={isListening ? "Send voice message" : "Start speaking"}
+            title={isListening ? "Send Message" : "Start Mic"}
             className={`h-12 md:h-14 px-4 md:px-8 rounded-full flex items-center justify-center gap-2 md:gap-3 transition-all transform shadow-xl w-full md:w-auto ${
               isListening 
                 ? 'bg-red-600 hover:bg-red-700 scale-105 ring-4 ring-red-900/50' 
@@ -404,12 +410,12 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
           >
             {isListening ? (
               <>
-                <Send size={18} className="md:w-5 md:h-5" fill="currentColor" />
+                <Send size={18} aria-hidden="true" className="md:w-5 md:h-5" fill="currentColor" />
                 <span className="font-bold text-sm md:text-base whitespace-nowrap">Tap to Send</span>
               </>
             ) : (
               <>
-                <Mic size={18} className="md:w-5 md:h-5" />
+                <Mic size={18} aria-hidden="true" className="md:w-5 md:h-5" />
                 <span className="font-bold text-sm md:text-base whitespace-nowrap">Tap to Speak</span>
               </>
             )}
