@@ -12,7 +12,10 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [22.x, 24.x]
+
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
     - uses: actions/checkout@v4
@@ -29,5 +32,5 @@ jobs:
     - name: Run Build
       run: npm run build
       env:
-        # Mocking environment variables required for build-time checks if any
+        # Mocking environment variables required for build-time checks
         VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
