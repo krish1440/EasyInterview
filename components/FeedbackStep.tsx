@@ -1,3 +1,13 @@
+/**
+ * @file FeedbackStep.tsx
+ * @module Components/Analytics
+ * @description State-of-the-art analytical dashboard for post-interview feedback.
+ * Orchestrates transcript evaluation, competency mapping, and ATS resume scoring.
+ * 
+ * @version 1.0.0
+ * @package EasyInterview
+ */
+
 import React, { useEffect, useState } from 'react';
 import { UserDetails, Message, FeedbackReport } from '../types';
 import { generateDetailedFeedback } from '../services/geminiService';
@@ -17,18 +27,19 @@ interface FeedbackStepProps {
 }
 
 /**
- * FeedbackStep Component
+ * Feedback and Analytics Engine.
  * 
- * Responsible for presenting the analytical results of the interview session.
- * Features include:
- * - Asynchronous retrieval and parsing of the AI-generated feedback report.
- * - Persistent storage of session metadata in local storage for history tracking.
- * - Interactive data visualization using Radar Charts for competency mapping.
- * - Detailed breakdown of transcript performance and resume ATS health.
- * - Personalized learning roadmap generation.
+ * @description
+ * This component represents the terminal stage of the interview lifecycle. 
+ * High-performance responsibilities include:
+ * 1. **Data Aggregation**: Interfacing with the Gemini service to produce a detailed session audit.
+ * 2. **Context Persistence**: Synchronizing session metadata with the browser's persistent storage.
+ * 3. **Quantitative Modeling**: Rendering radar competency charts for visual performance analysis.
+ * 4. **Strategic Insights**: Delivering an executive summary and actionable learning roadmaps based on qualitative speech data.
  * 
+ * @component FeedbackStep
  * @param {FeedbackStepProps} props - Component properties.
- * @returns {JSX.Element} The rendered feedback and analysis interface.
+ * @returns {JSX.Element} The high-fidelity feedback and analysis interface.
  */
 const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, onRestart }) => {
   const [report, setReport] = useState<FeedbackReport | null>(null);
