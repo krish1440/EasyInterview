@@ -1,3 +1,13 @@
+/**
+ * @file useSpeech.ts
+ * @module Hooks/Speech
+ * @description Advanced hook for managing multimodal speech interactions (STT and TTS).
+ * Implements resilient speech recognition patterns and high-quality synthesis.
+ * 
+ * @version 1.0.1
+ * @package EasyInterview
+ */
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 /**
@@ -10,20 +20,19 @@ interface IWindow extends Window {
 }
 
 /**
- * useSpeech Custom Hook
+ * Custom hook for full-duplex speech communication.
  * 
- * A comprehensive hook for managing multimodal speech interactions (STT and TTS).
+ * @description
+ * This hook encapsulates the complexities of the Web Speech API, providing:
+ * 1. **Persistent Speech-to-Text (STT)**: Uses a "Watchdog" timer to reset recognition sessions 
+ *    before browser-imposed 60s idle timeouts, ensuring an "infinite stream" feel.
+ * 2. **Lossless Restart Strategy**: Preserves interim transcripts during manual or automatic 
+ *    session restarts to prevent data loss.
+ * 3. **Intelligent Text-to-Speech (TTS)**: Cleans UI-specific symbols (markdown) and selects 
+ *    the highest quality local/system voices (e.g., Google US English, Apple Samantha).
  * 
- * Key Features:
- * - **Robust Speech-to-Text (STT)**: Implements an infinite stream listener with a 
- *   "Lossless Restart Strategy" to handle browser-forced timeouts safely.
- * - **Smart Keepalive**: Proactively restarts the recognition service during silence 
- *   to reset internal 60s browser timers.
- * - **Text-to-Speech (TTS)**: Manages synthesized voice output with automatic 
- *   buffer handling and markdown symbol cleaning.
- * - **Context State**: Exposes real-time transcript data and activity flags.
- * 
- * @returns {object} Speech control methods and status states.
+ * @function useSpeech
+ * @returns {SpeechInterface} An object containing reactive states and control methods.
  */
 export const useSpeech = () => {
   const [isListening, setIsListening] = useState(false);
@@ -162,7 +171,10 @@ export const useSpeech = () => {
   }, [isListening]);
 
   /**
-   * Initiates the microphone listener and clears temporary buffers.
+   * Initializes the microphone listener and clears temporary buffers.
+   * @description Resetting the state ensures a clean slate for the next response.
+   * @function startListening
+   * @public
    */
   const startListening = useCallback(() => {
     if (recognitionRef.current) {
@@ -218,8 +230,18 @@ export const useSpeech = () => {
   }, []);
 
   /**
-   * Synthesizes provided text into audible speech using selected high-quality system voices.
-   * @param {string} text - The raw text to be spoken.
+   * Synthesizes provided text into audible speech using high-fidelity system voices.
+   * 
+   * @description
+   * The process involves:
+   * 1. Pre-cleaning text (removing asterisks, hashtags, backticks).
+   * 2. injecting a slight buffer for auditory clarity.
+   * 3. Selecting preferred linguistic voices from the system's voice registry.
+   * 4. Executing speech synthesis with state-managed lifecycle (isSpeaking).
+   * 
+   * @function speak
+   * @param {string} text - The raw text to be synthesized into audio.
+   * @public
    */
   const speak = useCallback((text: string) => {
     if (synthRef.current) {
