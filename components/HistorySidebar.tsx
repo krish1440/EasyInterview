@@ -1,3 +1,13 @@
+/**
+ * @file HistorySidebar.tsx
+ * @module Components/Navigation
+ * @description Lateral navigation drawer for session history persistence.
+ * Synchronizes with browser localStorage to provide a chronological audit trail of interview attempts.
+ * 
+ * @version 1.0.0
+ * @package EasyInterview
+ */
+
 import React from 'react';
 import { SessionRecord } from '../types';
 import { Clock, BarChart2 } from 'lucide-react';
@@ -14,17 +24,17 @@ interface HistorySidebarProps {
 }
 
 /**
- * HistorySidebar Component
+ * Session History Controller.
  * 
- * Provides a slide-out interface for users to view their past interview performance.
+ * @description
+ * High-performance lateral drawer that facilitates:
+ * 1. **Persistence Logic**: Mapping and deserializing `SessionRecord` objects from `localStorage`.
+ * 2. **Chronological Sorting**: Displaying past performance metrics (scores, roles, dates) in descending order.
+ * 3. **Accessible UI**: Uses conditional rendering and slide-in animations for enhanced UX.
  * 
- * Logic:
- * - Retrieves session records stored in the browser's localStorage under the key 'interview_history'.
- * - Displays a chronological list of roles, dates, and scores.
- * - Utilizes a conditional rendering pattern based on the 'isOpen' prop.
- * 
+ * @component HistorySidebar
  * @param {HistorySidebarProps} props - Component properties.
- * @returns {JSX.Element | null} The rendered sidebar or null if closed.
+ * @returns {JSX.Element | null} The rendered sidebar or null if the navigation state is closed.
  */
 const HistorySidebar: React.FC<HistorySidebarProps> = ({ isOpen, onClose }) => {
   const history: SessionRecord[] = JSON.parse(localStorage.getItem('interview_history') || '[]');
