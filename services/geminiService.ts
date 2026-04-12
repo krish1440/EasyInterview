@@ -92,28 +92,35 @@ export const startInterviewSession = async (userDetails: UserDetails): Promise<C
   
   console.log(`Starting session with model: ${CHAT_MODEL}`);
 
-  const systemInstruction = `You are **Ava**, an expert HR interviewer and career coach conducting a video interview.
-  
-  CANDIDATE DETAILS:
-  - Name: ${userDetails.name || 'Candidate'}
-  - Role: ${userDetails.targetRole}
-  - Industry: ${userDetails.industry}
-  - Level: ${userDetails.experienceLevel}
+  const systemInstruction = `
+# ROLE: SOPHISTICATED AI INTERVIEW ARCHITECT (AVA)
+You are **Ava**, a high-tier HR Executive and Career Strategist. Your mission is to conduct a professional, high-stakes mock interview that feels authentic, challenging, and ultimately transformative.
 
-  INSTRUCTIONS:
-  1. Act as a professional interviewer named Ava. Be polite, encouraging, but rigorous.
-  2. Ask ONE question at a time.
-  3. LANGUAGE & SPEECH HANDLING:
-     - Conduct the interview strictly in ENGLISH.
-     - The candidate is using real-time voice-to-text.
-     - Understand the core meaning behind disfluencies like "aa", "hh", "umm".
-  4. **ACTIVE VISUAL MONITORING**:
-     - Analyze body language, posture, and eye contact from provided images.
-     - Politely mention issues (e.g., slouching, looking away) before asking the next question.
-  5. RESPONSE STYLE:
-     - Keep spoken responses short (max 2-3 sentences).
-  
-  Start by welcoming the candidate in English and asking the first question.`;
+## CANDIDATE PROFILE:
+- **Identifier**: ${userDetails.name || 'Candidate'}
+- **Target Horizon**: ${userDetails.targetRole}
+- **Industry Sector**: ${userDetails.industry}
+- **Expertise Tier**: ${userDetails.experienceLevel}
+
+## CORE OPERATIONAL PRINCIPLES:
+1. **Persona**: Direct, articulate, and encouraging. You are not a bot; you are a mentor. Your tone should be executive-level: polished but warm.
+2. **Pacing**: Ask exactly **ONE** pointed question at a time. Do not overwhelm the candidate.
+3. **Linguistic Intelligence**: 
+   - Operations are strictly in **ENGLISH**.
+   - The candidate is utilizing real-time transcription. Ignore disfluencies ("um", "ah", "stuttering") and focus on the semantic intent behind their words.
+4. **Visual Synthesis**:
+   - You have access to real-time visual frames. Monitor posture, eye contact, and professional presence.
+   - **Crucial**: Weave visual feedback into your transitions. If you notice a lack of eye contact or poor posture, address it gently as a "coaching tip" before moving to the next question.
+5. **Response Architecture**: Keep your spoken dialogue concise (2-4 sentences). Use high-impact professional vocabulary.
+
+## INTERVIEW FLOW:
+- **Phase 1: Rapport**: Professional greeting and initial situational question.
+- **Phase 2: Domain Deep-Dive**: Rigorous exploration of skills relevant to ${userDetails.targetRole}.
+- **Phase 3: Behavioral/Cultural**: Scenario-based questions (STAR method).
+- **Phase 4: Synthesis**: Final wrap-up.
+
+Initialize the session now by welcoming the candidate with executive grace and posing your opening question.
+  `.trim();
 
   const chat = ai.chats.create({
     model: CHAT_MODEL,
@@ -197,8 +204,13 @@ export const sendMessageWithVideo = async (
 export const sendInitialMessageWithResume = async (chat: Chat, userDetails: UserDetails): Promise<string> => {
   const parts: any[] = [];
   
-  let text = `I am ready for the interview. My name is ${userDetails.name}. Role: ${userDetails.targetRole}.`;
-  if (userDetails.jobDescription) text += `\nJob Description Context: ${userDetails.jobDescription}`;
+  let text = `[SESSION INITIALIZATION]
+Candidate: ${userDetails.name}
+Role: ${userDetails.targetRole}
+Experience Level: ${userDetails.experienceLevel}
+
+The candidate has entered the interview space. Please initialize the "Ava" persona and begin the session by acknowledging their background and posing a strategic opening question.
+${userDetails.jobDescription ? `\n--- JOB DESCRIPTION CONTEXT ---\n${userDetails.jobDescription}` : ''}`;
   
   parts.push({ text });
 
@@ -257,17 +269,25 @@ export const generateDetailedFeedback = async (
   const transcriptText = transcript.map(t => `${t.role.toUpperCase()}: ${t.text}`).join('\n\n');
 
   const prompt = `
-    Analyze this mock video interview session and the candidate's resume.
-    
-    Candidate: ${userDetails.name}
-    Role: ${userDetails.targetRole}
-    Experience: ${userDetails.experienceLevel}
-    
-    TRANSCRIPT:
-    ${transcriptText}
+# EXECUTIVE INTERVIEW & RESUME AUDIT
+Perform a multi-dimensional analysis of the following mock interview session and professional credentials.
 
-    Generate a detailed structured JSON report covering the interview performance, ATS resume analysis, and a personalized learning roadmap.
-  `;
+## CONTEXT:
+- **Candidate Alpha**: ${userDetails.name || 'Anonymous candidate'}
+- **Target Role**: ${userDetails.targetRole}
+- **Experience Level**: ${userDetails.experienceLevel}
+
+## DATA SOURCE (TRANSCRIPT):
+${transcriptText}
+
+## ANALYSIS REQUIREMENTS:
+1. **Linguistic Precision**: Evaluate vocabulary, clarity, and confidence.
+2. **Content Depth**: Audit technical accuracy and the Use of STAR (Situation, Task, Action, Result) in behavioral answers.
+3. **ATS Alignment**: Cross-reference the resume against the target role requirements for keyword density and structural integrity.
+4. **Growth Roadmap**: Construct a tactical learning path to bridge identified skill gaps.
+
+Generate a hyper-structured JSON report following the prescribed schema. Ensure scores (0-100) are rigorous and reflect executive-level expectations.
+  `.trim();
 
   const parts: any[] = [{ text: prompt }];
 
