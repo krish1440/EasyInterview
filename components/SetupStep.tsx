@@ -1,3 +1,13 @@
+/**
+ * @file SetupStep.tsx
+ * @module Components/Configuration
+ * @description Orchestrates the pre-interview configuration phase.
+ * Handles profile ingestion, multimodal JD analysis context, and resume serialization.
+ * 
+ * @version 1.0.0
+ * @package EasyInterview
+ */
+
 import React, { useState } from 'react';
 import { UserDetails } from '../types';
 import { fileToBase64 } from '../utils';
@@ -12,16 +22,19 @@ interface SetupStepProps {
 }
 
 /**
- * SetupStep Component
+ * Interactive Configuration Controller.
  * 
- * Orchestrates the configuration phase of the interview. 
- * Responsibilities include:
- * - Capturing candidate profile information (Name, Role, Experience).
- * - Processing resume uploads and converting them to base64 for AI consumption.
- * - Collecting job description context to customize the interview questions.
+ * @description
+ * High-fidelity form management that establishes the contextual foundation for the AI session.
  * 
+ * Core Functionalities:
+ * 1. **Schema Validation**: Ensures all required professional parameters are present.
+ * 2. **Base64 Pipeline**: Transforms uploaded PDF/Image resumes into API-compatible buffers.
+ * 3. **JD Synthesis**: Captures job descriptions to calibrate the AI's questioning rigor.
+ * 
+ * @component SetupStep
  * @param {SetupStepProps} props - Component properties.
- * @returns {JSX.Element} The rendered configuration form.
+ * @returns {JSX.Element} The rendered session configuration interface.
  */
 const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
   const [formData, setFormData] = useState<UserDetails>({
