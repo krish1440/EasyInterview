@@ -16,19 +16,9 @@ Train smarter. Interview stronger. Perform better — anytime, anywhere (24/7).
 
 ---
 
-## 📖 Table of Contents
-- [✨ Key Features](#-key-features)
-- [🎯 Mission](#-mission)
-- [🧩 System Architecture](#-system-architecture)
-- [🔁 Interview Experience Workflow](#-interview-experience-workflow)
-- [📊 Performance Analytics](#-performance-analytics)
-- [🛠️ Technology Stack](#-technology-stack)
-- [📂 Project Structure](#-project-structure)
-- [🚀 Quick Start](#-quick-start)
-- [🔐 Privacy & Security](#-privacy--security)
-- [🛣️ Future Roadmap](#-future-roadmap)
 
 ---
+
 
 ## ✨ Key Features
 
