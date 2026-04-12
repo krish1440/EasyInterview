@@ -1,3 +1,10 @@
+/**
+ * @file InterviewStep.tsx
+ * @module Components/Interview
+ * @description The live interview core engine. Manages video streaming, AI synchronization, 
+ * multimodal messaging, and real-time STT/TTS integration.
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 import { UserDetails, Message } from '../types';
 import { startInterviewSession, sendInitialMessageWithResume, sendMessageWithVideo } from '../services/geminiService';
@@ -16,16 +23,18 @@ interface InterviewStepProps {
 }
 
 /**
- * InterviewStep Component
+ * Orchestrator for the active AI interview experience.
  * 
- * The core engine of the interview experience. It manages:
- * - Real-time video/audio streaming and UI rendering.
- * - Integration with Gemini AI via multimodal message handling (text + snapshots).
- * - Speech-to-text (STT) and Text-to-speech (TTS) synchronization.
- * - Interview lifecycle management (init, active phase, cleanup).
+ * @description
+ * High-performance component managing multimodal interactivity:
+ * 1. **Visual Intelligence**: Captures periodic snapshots from the camera feed and serializes them to base64.
+ * 2. **AI Integration**: Maintains a stateful conversation session with the Gemini API via the `geminiService`.
+ * 3. **Accessibility (STT/TTS)**: Synchronizes browser-native speech recognition and synthesis for a hands-free experience.
+ * 4. **Reactive UI**: Displays real-time captions and provides visual feedback for AI speech patterns.
  * 
- * @param {InterviewStepProps} props - Component properties.
- * @returns {JSX.Element} The active interview interface.
+ * @component InterviewStep
+ * @param {InterviewStepProps} props - Component properties including UserDetails and completion handlers.
+ * @returns {JSX.Element} The active multimodal interview dashboard.
  */
 const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) => {
   const [messages, setMessages] = useState<Message[]>([]);
