@@ -1,5 +1,15 @@
 /**
- * Application state steps used for navigation and phase management.
+ * @file types.ts
+ * @module Data/Interfaces
+ * @description Domain-driven type definitions and enumerations for the EasyInterview ecosystem.
+ * This file serves as the definitive source of truth for conversational and analytical data structures.
+ * 
+ * @version 1.0.0
+ */
+
+/**
+ * Lifecycle stages of the interview application.
+ * Defines the navigation flow and component rendering state.
  */
 export enum AppStep {
   /** Landing page state */
