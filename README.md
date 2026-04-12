@@ -77,9 +77,38 @@ Bridge the gap between **interview preparation** and **real-world performance** 
 - **Role**: Coordinates NLP, vision analysis, and interview logic in real-time.
 
 ### 🔊 Speech & Vision Pipeline
-- **Speech-to-Text (STT)**: High-accuracy conversion of candidate responses.
-- **NLU (Natural Language Understanding)**: Scores clarity, relevance, and technical depth.
-- **Visual Intelligence**: Analyzes eye gaze, head pose, and body posture balance.
+- **Speech-to-Text (STT)**: High-accuracy conversion of candidate responses using a **Lossless Recognition Restart Strategy**.
+- **NLU (Natural Language Understanding)**: Scores clarity, relevance, and technical depth through executive-level persona modeling.
+- **Visual Intelligence**: Analyzes eye gaze, head pose, and body posture balance via real-time frame serialization.
+
+---
+
+## 🏗️ Architectural Flow
+
+```mermaid
+graph TD
+    A[Candidate] -->|Voice/Video| B(useSpeech Hook)
+    B -->|Transcripts/Frames| C[geminiService]
+    D[Resume/JD] -->|Context| C
+    C -->|Multimodal Payload| E{Google Gemini AI}
+    E -->|Executive Response| C
+    C -->|TTS Synthesis| B
+    B -->|Audio Feedback| A
+    E -->|JSON Report| F[Analytics Dashboard]
+```
+
+---
+
+## 🛠️ Engineering Excellence
+
+### 1. Robust Speech-to-Text (STT)
+The application implements an **Infinite Streaming Pattern** to circumvent browser-imposed 60-second timeouts. A "Watchdog" timer proactively restarts the recognition service during silences, ensuring zero data loss during long answers.
+
+### 2. Full-Duplex Multimodality
+Unlike traditional AI bots, EasyInterview handles **Vision and Voice concurrently**. Sequential video frames are sampled and injected into the conversational prompt, allowing the AI to provide feedback on posture *while* listening to the verbal response.
+
+### 3. Type-Safe JSON Schemas
+Analytical reports are generated using **Gemini's Structured Output** capability. We enforce a strictly defined TypeScript interface as the schema, ensuring the resulting JSON is always valid for the Recharts visualization engine.
 
 ---
 
