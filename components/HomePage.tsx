@@ -1,3 +1,13 @@
+/**
+ * @file HomePage.tsx
+ * @module Components/Landing
+ * @description The primary entry point and high-impact hero destination for the platform.
+ * Showcases core AI capabilities and guides users through the interview preparation pipeline.
+ * 
+ * @version 1.0.0
+ * @package EasyInterview
+ */
+
 import React from 'react';
 import { Play, Mic, Video, FileText, BarChart2, Zap, BrainCircuit, ArrowRight, ShieldCheck } from 'lucide-react';
 
@@ -10,14 +20,17 @@ interface HomePageProps {
 }
 
 /**
- * HomePage Component
+ * Landing Page Controller.
  * 
- * Serves as the landing destination for the EasyInterview platform. 
- * Features a high-impact hero section, a grid outlining key AI capabilities 
- * (Visual analysis, Speech coaching, Resume ATS), and a three-step instructional guide.
+ * @description
+ * High-performance landing destination featuring:
+ * 1. **Hero Architecture**: Use of multi-layered gradients and Z-axis animations to establish a premium feel.
+ * 2. **Feature Grid**: Semantic breakdown of the platform's vision, speech, and resume capabilities.
+ * 3. **Funnel Guidance**: A three-step instructional visualizer to onboard new users.
  * 
- * @param {HomePageProps} props - Component properties including the start session callback.
- * @returns {JSX.Element} The rendered landing page.
+ * @component HomePage
+ * @param {HomePageProps} props - Component properties including the `onStart` navigation handler.
+ * @returns {JSX.Element} The high-impact landing page interface.
  */
 const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
   return (
