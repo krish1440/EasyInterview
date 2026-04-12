@@ -1,3 +1,13 @@
+/**
+ * @file App.tsx
+ * @module Core
+ * @description Root entry point for the EasyInterview application.
+ * Manages global routing, state orchestration between interview phases, and hardware-based access control.
+ * 
+ * @version 1.2.0
+ * @package EasyInterview
+ */
+
 import React, { useState } from 'react';
 import { AppStep, UserDetails, Message } from './types';
 import SetupStep from './components/SetupStep';
@@ -9,19 +19,20 @@ import { LayoutGrid, History as HistoryIcon, User, Monitor, Laptop, Globe, Home,
 import { Analytics } from "@vercel/analytics/react";
 
 /**
- * App Component
+ * Primary Application Controller.
  * 
- * The root component of the EasyInterview application.
- * Manages the high-level application state, including:
- * - Current navigation step (Home, Setup, Interview, Feedback).
- * - Global candidate profile data.
- * - Conversation transcript persistence for the current session.
- * - History sidebar visibility.
+ * @description
+ * Implements the core finite state machine (FSM) for the interview lifecycle:
+ * LANDING -> CONFIGURATION -> LIVE_SESSION -> ANALYTICS.
  * 
- * Also handles the responsive layout logic, specifically blocking mobile devices 
- * that don't meet the hardware requirements for real-time video analysis.
+ * Key architectural responsibilities:
+ * 1. **Phase Orchestration**: Transitions between Home, Setup, Interview, and Feedback steps.
+ * 2. **Context Persistence**: Maintains candidate profiles and session transcripts.
+ * 3. **Hardware Enforcement**: Implements a strict mobile-blocker to ensure computational 
+ *    resources meet video analysis and STT requirements.
  * 
- * @returns {JSX.Element} The rendered application shell.
+ * @component App
+ * @returns {JSX.Element} The high-level application layout and provider shell.
  */
 function App() {
   const [currentStep, setCurrentStep] = useState<AppStep>(AppStep.HOME);
