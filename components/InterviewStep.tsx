@@ -9,8 +9,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { UserDetails, Message } from '../types';
 import { startInterviewSession, sendInitialMessageWithResume, sendMessageWithVideo } from '../services/geminiService';
 import { useSpeech } from '../hooks/useSpeech';
-import { Mic, Send, Video, VideoOff, PhoneOff, Volume2, VolumeX, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Mic, Send, Video, VideoOff, PhoneOff, Volume2, VolumeX, RefreshCw, AlertTriangle, Eye, Activity } from 'lucide-react';
 import { Chat } from "@google/genai";
+import AudioVisualizer from './AudioVisualizer';
 
 /**
  * Properties for the InterviewStep component.
@@ -298,7 +299,15 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] bg-black text-white rounded-xl overflow-hidden shadow-2xl border border-slate-800">
+    <div className="flex flex-col h-[calc(100vh-80px)] bg-black text-white rounded-xl overflow-hidden shadow-2xl border border-slate-800 relative">
+      
+      {/* Visual Feedback Glows */}
+      {isSpeaking && (
+        <div className="absolute inset-0 pointer-events-none z-50 animate-pulse border-[4px] border-indigo-500/20 shadow-[inset_0_0_100px_rgba(99,102,241,0.1)] transition-all"></div>
+      )}
+      {isListening && !isSpeaking && (
+        <div className="absolute inset-0 pointer-events-none z-50 animate-pulse border-[4px] border-red-500/10 shadow-[inset_0_0_80px_rgba(239,68,68,0.05)] transition-all"></div>
+      )}
       
       <div className="flex-1 flex flex-col md:flex-row relative overflow-hidden">
         
@@ -313,6 +322,11 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
               <div className={`w-16 h-16 sm:w-24 sm:h-24 md:w-36 md:h-36 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg relative`}>
                  <div className="text-2xl sm:text-4xl">🤖</div>
                  {isSpeaking && (
+                   <div className="absolute -bottom-2 w-full h-8 flex items-center justify-center">
+                     <AudioVisualizer stream={stream} isActive={isSpeaking} color="#FFFFFF" />
+                   </div>
+                 )}
+                 {isSpeaking && (
                    <>
                      <div className="absolute inset-0 border-2 border-indigo-400 rounded-full animate-ping opacity-20"></div>
                      <div className="absolute inset-0 border-2 border-purple-400 rounded-full animate-ping opacity-20 delay-150"></div>
@@ -320,7 +334,29 @@ const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) 
                  )}
               </div>
             </div>
-            <p className="mt-4 md:mt-6 text-slate-400 font-medium text-center max-w-md animate-fadeIn min-h-[2rem] text-sm md:text-base px-4">
+
+            {/* Presence Indicator */}
+            <div className="flex items-center gap-3 mt-4 px-4 py-1.5 rounded-full bg-slate-800/50 border border-white/5 backdrop-blur-sm">
+               {isLoading ? (
+                  <span className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-widest">
+                    <Activity size={12} className="animate-spin" /> Thinking
+                  </span>
+               ) : isSpeaking ? (
+                  <span className="flex items-center gap-2 text-xs font-bold text-purple-400 uppercase tracking-widest">
+                    <Volume2 size={12} className="animate-pulse" /> Speaking
+                  </span>
+               ) : isListening ? (
+                  <span className="flex items-center gap-2 text-xs font-bold text-red-500 uppercase tracking-widest">
+                    <Mic size={12} className="animate-bounce" /> Listening
+                  </span>
+               ) : (
+                  <span className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    Ready
+                  </span>
+               )}
+            </div>
+
+            <p className="mt-4 md:mt-2 text-slate-400 font-medium text-center max-w-md animate-fadeIn min-h-[2rem] text-sm md:text-base px-4">
               {isLoading ? (
                 <span className="flex items-center gap-2 justify-center text-indigo-400">
                   Ava is thinking <span className="animate-bounce">.</span><span className="animate-bounce delay-100">.</span><span className="animate-bounce delay-200">.</span>
