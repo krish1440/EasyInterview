@@ -17,6 +17,8 @@ import HomePage from './components/HomePage';
 import HistorySidebar from './components/HistorySidebar';
 import { LayoutGrid, History as HistoryIcon, User, Monitor, Laptop, Globe, Home, Linkedin, Github, Mail } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/react";
+import ErrorBoundary from './components/ErrorBoundary';
+import SecurityGuard from './components/SecurityGuard';
 
 /**
  * Primary Application Controller.
@@ -65,10 +67,11 @@ function App() {
   };
 
   return (
-    <>
-      <Analytics />
-      
-      {/* Mobile Blocker - Desktop Requirement Enforcement */}
+    <ErrorBoundary>
+      <SecurityGuard>
+        <Analytics />
+        
+        {/* Mobile Blocker - Desktop Requirement Enforcement */}
       <div className="lg:hidden min-h-screen bg-slate-50 flex flex-col font-sans">
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
           <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-indigo-200">
@@ -277,7 +280,8 @@ function App() {
           />
         )}
       </div>
-    </>
+    </SecurityGuard>
+  </ErrorBoundary>
   );
 }
 
