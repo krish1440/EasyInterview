@@ -1,0 +1,32 @@
+{
+  "tips": [
+    {
+      "id": "TIP_001",
+      "category": "Behavioral",
+      "title": "The STAR Method",
+      "description": "Structure your answers using Situation, Task, Action, and Result formats to provide clear and concise behavioral evidence.",
+      "priority": "High"
+    },
+    {
+      "id": "TIP_002",
+      "category": "Technical",
+      "title": "Think Out Loud",
+      "description": "During coding or problem-solving tasks, vocalize your thought process. Interviewers care more about your logic than a perfect solution.",
+      "priority": "Critical"
+    },
+    {
+      "id": "TIP_003",
+      "category": "Body Language",
+      "title": "Maintain Eye Contact",
+      "description": "Look directly at the camera while speaking to simulate eye contact. Avoid focusing only on your own video feed.",
+      "priority": "Medium"
+    },
+    {
+      "id": "TIP_004",
+      "category": "Closing",
+      "title": "Ask Insightful Questions",
+      "description": "Have 3-5 questions ready for the interviewer about team culture, technical debt, or growth opportunities.",
+      "priority": "High"
+    }
+  ]
+}
