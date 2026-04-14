@@ -30,9 +30,36 @@ interface IWindow extends Window {
  *    session restarts to prevent data loss.
  * 3. **Intelligent Text-to-Speech (TTS)**: Cleans UI-specific symbols (markdown) and selects 
  *    the highest quality local/system voices (e.g., Google US English, Apple Samantha).
- * 
+ */
+/**
+ * Interface for the speech hook return payload.
+ * @interface SpeechInterface
+ */
+export interface SpeechInterface {
+  /** Reactive state indicating if the microphone is active and transcribing */
+  isListening: boolean;
+  /** The current accumulated transcript of the user's speech */
+  transcript: string;
+  /** State setter for the transcript */
+  setTranscript: React.Dispatch<React.SetStateAction<string>>;
+  /** Initiates the Speech Recognition engine */
+  startListening: () => void;
+  /** Immediately terminates the Speech Recognition engine */
+  stopListening: () => void;
+  /** Converts text to audible speech using system voices */
+  speak: (text: string) => void;
+  /** Reactive state indicating if the system is currently synthesizing audio */
+  isSpeaking: boolean;
+  /** Interrupts and clears all active speech synthesis tasks */
+  cancelSpeech: () => void;
+  /** Clears the local transcript buffers */
+  resetTranscript: () => void;
+}
+
+/**
+ * Advanced Hook for Full-Duplex Speech Communication.
  * @function useSpeech
- * @returns {SpeechInterface} An object containing reactive states and control methods.
+ * @returns {SpeechInterface} The operational interface for STT and TTS.
  */
 export const useSpeech = () => {
   const [isListening, setIsListening] = useState(false);
