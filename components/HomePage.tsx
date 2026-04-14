@@ -10,6 +10,7 @@
 
 import React from 'react';
 import { Play, Mic, Video, FileText, BarChart2, Zap, BrainCircuit, ArrowRight, ShieldCheck } from 'lucide-react';
+import { useSEO } from '../hooks/useSEO';
 
 /**
  * Properties for the HomePage component.
@@ -33,6 +34,12 @@ interface HomePageProps {
  * @returns {JSX.Element} The high-impact landing page interface.
  */
 const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
+  useSEO({
+    title: 'EasyInterview | Professional AI Interview Coach',
+    description: 'Master your next job interview with Ava, your personal AI interviewer. Featuring real-time voice interaction, video posture analysis, and AI resume critique.',
+    keywords: 'AI Interview, Career Coach, Mock Interview, Job Prep, Resume Analysis, Technical Interview Prep'
+  });
+
   return (
     <div className="flex flex-col animate-fadeIn">
       
