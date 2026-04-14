@@ -1,7 +1,9 @@
 /**
  * @file SecurityGuard.tsx
  * @module Components/Safety
- * @description Validates environmental configurations before application boots.
+ * @description Validates environmental configurations before the application boots.
+ * Ensures that critical infrastructure, specifically the Google Gemini API Key,
+ * is properly configured to prevent runtime failures.
  */
 
 import React from 'react';
