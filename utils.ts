@@ -1,10 +1,14 @@
 /**
- * Converts a File object to a base64 encoded string.
- * This utility strips the Data URL prefix (e.g., "data:application/pdf;base64,") 
- * to return only the raw base64 data.
+ * Converts a browser File object to a raw base64 encoded string.
  * 
- * @param {File} file - The file to be converted.
- * @returns {Promise<string>} A promise that resolves to the base64 string.
+ * @description
+ * This utility facilitates multimodal data transmission by:
+ * 1. Reading the file content as a Data URL.
+ * 2. Parsing the resulting string to extract only the base64 payload.
+ * 3. Sanitizing the output for compatibility with Google Gemini API parts.
+ * 
+ * @param {File} file - The source file (e.g., PDF, Image) to be converted.
+ * @returns {Promise<string>} A promise resolving to the sanitized base64 string.
  */
 export const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -20,18 +24,20 @@ export const fileToBase64 = (file: File): Promise<string> => {
 };
 
 /**
- * Generates a pseudo-random alphanumeric string for unique identification.
+ * Generates a non-cryptographic pseudo-random Alphanumeric identifier.
+ * Ideal for temporary DOM keys or session tracking.
  * 
- * @returns {string} A 9-character random string.
+ * @returns {string} A 9-character base-36 string.
  */
-export const generateId = () => Math.random().toString(36).substr(2, 9);
+export const generateId = () => Math.random().toString(36).substring(2, 9);
 
 /**
- * Formats a JavaScript Date object into a human-readable string.
- * Format example: "Oct 10, 10:32 PM"
+ * Transforms a Date instance into a localized, human-friendly string.
+ * Uses the UK Locale (en-GB) for standard day-month-year sequencing.
  * 
- * @param {Date} date - The date to format.
- * @returns {string} The formatted date string.
+ * @example "15 Apr, 01:25"
+ * @param {Date} date - The date object to be formatted.
+ * @returns {string} The formatted chronological string.
  */
 export const formatDate = (date: Date) => {
   return new Intl.DateTimeFormat('en-GB', {
