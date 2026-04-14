@@ -2,9 +2,15 @@
  * @file types.ts
  * @module Data/Interfaces
  * @description Domain-driven type definitions and enumerations for the EasyInterview ecosystem.
- * This file serves as the definitive source of truth for conversational and analytical data structures.
+ * This file serves as the definitive source of truth for conversational, analytical, 
+ * and persistent data structures.
  * 
- * @version 1.0.0
+ * Includes:
+ * - Application lifecycle states.
+ * - Multimodal session metadata.
+ * - Analytical feedback schemas for interviews and resumes.
+ * 
+ * @version 1.1.0
  */
 
 /**
