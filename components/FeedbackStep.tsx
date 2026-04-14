@@ -13,6 +13,7 @@ import { UserDetails, Message, FeedbackReport } from '../types';
 import { generateDetailedFeedback } from '../services/geminiService';
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { CheckCircle, AlertTriangle, BookOpen, Copy, Loader2, Video, FileText, Star, RefreshCw, ChevronRight, Activity } from 'lucide-react';
+import { useSEO } from '../hooks/useSEO';
 
 /**
  * Properties for the FeedbackStep component.
@@ -43,6 +44,12 @@ interface FeedbackStepProps {
  */
 const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, onRestart }) => {
   const [report, setReport] = useState<FeedbackReport | null>(null);
+
+  useSEO({
+    title: `Interview Report: ${userDetails.targetRole}`,
+    description: `Comprehensive AI interview analysis for ${userDetails.name} as a ${userDetails.targetRole}. Includes competency radar, ATS score, and growth roadmap.`,
+    keywords: 'Interview Analytics, Performance Report, Career Growth, AI Assessment'
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
