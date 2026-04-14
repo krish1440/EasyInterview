@@ -12,12 +12,17 @@ import React, { useState } from 'react';
 import { UserDetails } from '../types';
 import { fileToBase64 } from '../utils';
 import { Upload, Briefcase, ChevronRight, Check, Play } from 'lucide-react';
+import { useSEO } from '../hooks/useSEO';
 
 /**
  * Properties for the SetupStep component.
+ * @interface SetupStepProps
  */
 interface SetupStepProps {
-  /** Callback function invoked when the configuration phase is successfully completed */
+  /** 
+   * Callback function invoked when the configuration phase is successfully completed.
+   * @param {UserDetails} details - The structured candidate profile and session configuration.
+   */
   onComplete: (details: UserDetails) => void;
 }
 
@@ -37,6 +42,12 @@ interface SetupStepProps {
  * @returns {JSX.Element} The rendered session configuration interface.
  */
 const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
+  useSEO({
+    title: 'Configure Your Session',
+    description: 'Prepare your AI mock interview by setting your target role and experience level.',
+    keywords: 'Interview Config, Mock Session Setup, Career Prep'
+  });
+
   const [formData, setFormData] = useState<UserDetails>({
     name: '',
     targetRole: '',
@@ -83,8 +94,15 @@ const SetupStep: React.FC<SetupStepProps> = ({ onComplete }) => {
   };
 
   /**
-   * Validates the configuration and completes the setup phase.
-   * @param {React.FormEvent} e - Form submission event.
+   * Finalizes the configuration and transitions to the interview stage.
+   * 
+   * @description
+   * 1. Performs semantic validation on required fields.
+   * 2. Triggers a transient loading state to simulate environment preparation.
+   * 3. Dispatches the `onComplete` event with the consolidated `UserDetails` object.
+   * 
+   * @param {React.FormEvent} e - Standard form submission event.
+   * @returns {void}
    */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
