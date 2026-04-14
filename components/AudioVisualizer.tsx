@@ -1,7 +1,9 @@
 /**
  * @file AudioVisualizer.tsx
  * @module Components/Interactivity
- * @description Real-time audio waveform visualizer using Web Audio API.
+ * @description Real-time audio waveform visualizer using the Web Audio API.
+ * Provides visual feedback for AI and user speech by rendering frequency data
+ * onto a performant canvas element.
  */
 
 import React, { useEffect, useRef } from 'react';
