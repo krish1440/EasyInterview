@@ -2,7 +2,13 @@
  * @file InterviewStep.tsx
  * @module Components/Interview
  * @description The live interview core engine. Manages video streaming, AI synchronization, 
- * multimodal messaging, and real-time STT/TTS integration.
+ * multimodal messaging, and real-time Speech-to-Text (STT) and Text-to-Speech (TTS) integration.
+ * 
+ * Features:
+ * - Real-time video frame capture for visual context.
+ * - Stateful conversation management with Google Gemini.
+ * - Synchronized voice interaction using Web Speech API.
+ * - Accessible UI with rolling captions and presence indicators.
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -12,6 +18,7 @@ import { useSpeech } from '../hooks/useSpeech';
 import { Mic, Send, Video, VideoOff, PhoneOff, Volume2, VolumeX, RefreshCw, AlertTriangle, Eye, Activity } from 'lucide-react';
 import { Chat } from "@google/genai";
 import AudioVisualizer from './AudioVisualizer';
+import { useSEO } from '../hooks/useSEO';
 
 /**
  * Properties for the InterviewStep component.
@@ -38,6 +45,12 @@ interface InterviewStepProps {
  * @returns {JSX.Element} The active multimodal interview dashboard.
  */
 const InterviewStep: React.FC<InterviewStepProps> = ({ userDetails, onFinish }) => {
+  useSEO({
+    title: `Live Session: ${userDetails.targetRole}`,
+    description: `Active AI mock interview session for the position of ${userDetails.targetRole}. Powered by Gemini.`,
+    keywords: 'Live Interview, AI Mock Session, Technical Assessment'
+  });
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [chatSession, setChatSession] = useState<Chat | null>(null);
   const [inputValue, setInputValue] = useState('');
