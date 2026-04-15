@@ -11,6 +11,7 @@
 import React from 'react';
 import { Play, Mic, Video, FileText, BarChart2, Zap, BrainCircuit, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useSEO } from '../hooks/useSEO';
+import Logo from './Logo';
 
 /**
  * Properties for the HomePage component.
@@ -48,8 +49,9 @@ const HomePage: React.FC<HomePageProps> = ({ onStart }) => {
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-600/20 rounded-full mix-blend-screen filter blur-[100px] translate-y-1/3 -translate-x-1/4"></div>
 
         <div className="relative z-10 max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-widest mb-6">
-            <Zap size={14} className="fill-indigo-300" /> AI-Powered Career Coaching
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-indigo-300 text-xs font-bold uppercase tracking-widest mb-8 backdrop-blur-sm">
+            <Logo size={16} /> 
+            AI-Powered Career Coaching
           </div>
           
           <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6 leading-tight">
