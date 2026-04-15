@@ -15,8 +15,8 @@ interface LogoProps {
  * Premium Brand Asset: EasyInterview Logo.
  * 
  * @description
- * A modern, pentagonal emblem featuring a professional interview motif.
- * Symbolizes a secure, AI-powered shield for career growth.
+ * An ultra-scaled, pentagonal emblem designed for maximum visibility.
+ * Features a bold interview motif that fills the entire icon container.
  * 
  * @component Logo
  */
@@ -30,32 +30,32 @@ const Logo: React.FC<LogoProps> = ({ size = 24, className = "" }) => {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Bold Pentagonal Interview Shield */}
+      {/* Ultra-Large Pentagonal Shield - Maximum Container Fill */}
       <path 
-        d="M12 2L4 7V17.5L12 22L20 17.5V7L12 2Z" 
+        d="M12 0.5L1.5 8V18.5L12 23.5L22.5 18.5V8L12 0.5Z" 
         fill="#4338ca" 
       />
       
-      {/* Large-Scale Microphone Core - Signifying Professional Interview */}
-      <rect x="9.5" y="7" width="5" height="8" rx="2.5" fill="white" />
+      {/* Maximized Microphone Core */}
+      <rect x="9" y="6" width="6" height="10" rx="3" fill="white" />
       
-      {/* Audio Capture Wave - Integrated UI Element */}
+      {/* High-Impact Capture Wave */}
       <path 
-        d="M7 11C7 13.7614 9.23858 16 12 16C14.7614 16 17 13.7614 17 11" 
+        d="M6 10.5C6 13.5 8.5 16 12 16C15.5 16 18 13.5 18 10.5" 
         stroke="white" 
-        strokeWidth="2" 
+        strokeWidth="2.2" 
         strokeLinecap="round" 
       />
       
-      {/* Dynamic Voice Modulation Bars */}
-      <rect x="7" y="10" width="1.5" height="2" rx="0.75" fill="white" fillOpacity="0.5" />
-      <rect x="15.5" y="10" width="1.5" height="2" rx="0.75" fill="white" fillOpacity="0.5" />
+      {/* Bold Modulation Nodes */}
+      <rect x="5.5" y="9.5" width="2" height="3" rx="1" fill="white" fillOpacity="0.6" />
+      <rect x="16.5" y="9.5" width="2" height="3" rx="1" fill="white" fillOpacity="0.6" />
       
-      {/* AI Apex Pulsar - Representing Live Analysis */}
-      <circle cx="12" cy="4.5" r="1.2" fill="white" className="animate-pulse" />
+      {/* AI Apex Pulsar - Integrated at top point */}
+      <circle cx="12" cy="3.5" r="1.3" fill="white" className="animate-pulse" />
       
-      {/* Stability Stem */}
-      <rect x="11.5" y="16" width="1" height="2.5" rx="0.5" fill="white" opacity="0.6" />
+      {/* Lower Foundation Base */}
+      <rect x="11.2" y="16.5" width="1.6" height="3.5" rx="0.8" fill="white" opacity="0.6" />
     </svg>
   );
 };
