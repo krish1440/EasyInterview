@@ -20,40 +20,34 @@ interface LogoProps {
  * 
  * @component Logo
  */
-const Logo: React.FC<LogoProps> = ({ size = 32, className = "" }) => {
+const Logo: React.FC<LogoProps> = ({ size = 24, className = "" }) => {
   return (
     <svg 
       width={size} 
       height={size} 
-      viewBox="0 0 100 100" 
+      viewBox="0 0 24 24" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      <defs>
-        <linearGradient id="logo-dark-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#4338ca" /> {/* Indigo 700 */}
-          <stop offset="100%" stopColor="#7e22ce" /> {/* Purple 700 */}
-        </linearGradient>
-      </defs>
-      
-      {/* Outer Hexagon - High Contrast Stroke */}
+      {/* High-Impact Solid Hexagon Background */}
       <path 
-        d="M50 8L12 30V70L50 92L88 70V30L50 8Z" 
-        stroke="url(#logo-dark-gradient)" 
-        strokeWidth="8" 
-        strokeLinejoin="round" 
+        d="M12 2L4 6.5V17.5L12 22L20 17.5V6.5L12 2Z" 
+        fill="#4338ca" 
       />
       
-      {/* Central Voice Metric - Solid Dark Gradient */}
-      <rect x="44" y="30" width="12" height="40" rx="6" fill="url(#logo-dark-gradient)" />
+      {/* Central Voice Pillar - High Contrast White */}
+      <rect x="11" y="8" width="2" height="8" rx="1" fill="white" />
       
-      {/* Dynamic Spectrum Bars - Accentuating depth */}
-      <rect x="26" y="42" width="10" height="16" rx="5" fill="url(#logo-dark-gradient)" fillOpacity="0.4" />
-      <rect x="64" y="42" width="10" height="16" rx="5" fill="url(#logo-dark-gradient)" fillOpacity="0.4" />
+      {/* Symmetrical Side-bars - Representing AI modulation */}
+      <rect x="7.5" y="10.5" width="2" height="3" rx="1" fill="white" fillOpacity="0.7" />
+      <rect x="14.5" y="10.5" width="2" height="3" rx="1" fill="white" fillOpacity="0.7" />
       
-      {/* Intelligence Node - Floating at apex */}
-      <circle cx="50" cy="20" r="4" fill="#4338ca" />
+      {/* AI Apex Node */}
+      <circle cx="12" cy="5.5" r="1.2" fill="white" />
+      
+      {/* Subtle Base Foundation */}
+      <path d="M9 19H15" stroke="white" strokeWidth="1" strokeLinecap="round" opacity="0.3" />
     </svg>
   );
 };
