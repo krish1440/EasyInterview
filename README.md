@@ -119,12 +119,12 @@ Analytical reports are generated using **Gemini's Structured Output** capability
 ## 📊 Performance Analytics Dashboard
 
 ### 📈 Performance Radar
-Tracks candidate ability across 5 critical dimensions:
-- **Communication Clarity**
-- **Technical Depth**
-- **Logical Problem-Solving**
-- **Professional Confidence**
-- **Body Presence & Expressiveness**
+Visualize your competency across 5 critical dimensions:
+- **Answer Quality**: Technical depth and accuracy of responses.
+- **Resume Alignment**: Consistency with provided credentials and role.
+- **Linguistic Precision**: Professional vocabulary and communication clarity.
+- **Confidence & Presence**: Audible assurance and perceived professional aura.
+- **Behavioral Impact**: Strategic effectiveness using the STAR method.
 
 ### 📝 Question-Level Evaluation
 - **Linguistic Clarity**: How well did you articulate your ideas?

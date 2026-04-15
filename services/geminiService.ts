@@ -324,11 +324,17 @@ Perform a multi-dimensional analysis of the following mock interview session and
 ## DATA SOURCE (TRANSCRIPT):
 ${transcriptText}
 
-## ANALYSIS REQUIREMENTS:
-1. **Linguistic Precision**: Evaluate vocabulary, clarity, and confidence.
-2. **Content Depth**: Audit technical accuracy and the Use of STAR (Situation, Task, Action, Result) in behavioral answers.
-3. **ATS Alignment**: Cross-reference the resume against the target role requirements for keyword density and structural integrity.
-4. **Growth Roadmap**: Construct a tactical learning path to bridge identified skill gaps.
+## ANALYSIS REQUIREMENTS (RADAR METRICS):
+You MUST provide exactly 5 categories of feedback in the 'categoryFeedback' list to populate the Performance Radar:
+1. **Answer Quality**: Evaluation of technical accuracy, depth, and relevance of responses.
+2. **Resume Alignment**: How well the spoken answers align with the provided resume and target role requirements.
+3. **Linguistic Precision**: Clarity, vocabulary range, and professional communication style.
+4. **Confidence & Presence**: Audible confidence, pace of speech, and perceived professional aura.
+5. **Behavioral Impact**: Effectiveness in using the STAR method and articulating soft skills/leadership.
+
+## ADDITIONAL AUDIT:
+- **ATS Alignment**: Detailed structural audit of the resume for keywords and format.
+- **Growth Roadmap**: Construct a tactical learning path to bridge identified skill gaps.
 
 Generate a hyper-structured JSON report following the prescribed schema. Ensure scores (0-100) are rigorous and reflect executive-level expectations.
   `.trim();
