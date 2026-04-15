@@ -37,7 +37,14 @@ interface HistorySidebarProps {
  * @returns {JSX.Element | null} The rendered sidebar or null if the navigation state is closed.
  */
 const HistorySidebar: React.FC<HistorySidebarProps> = ({ isOpen, onClose }) => {
-  const history: SessionRecord[] = JSON.parse(localStorage.getItem('interview_history') || '[]');
+  let history: SessionRecord[] = [];
+  try {
+    history = JSON.parse(localStorage.getItem('interview_history') || '[]');
+    if (!Array.isArray(history)) history = [];
+  } catch (e) {
+    console.error("Failed to parse history from localStorage", e);
+    history = [];
+  }
 
   if (!isOpen) return null;
 
