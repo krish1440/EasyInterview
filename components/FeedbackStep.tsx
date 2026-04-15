@@ -12,8 +12,9 @@ import React, { useEffect, useState } from 'react';
 import { UserDetails, Message, FeedbackReport } from '../types';
 import { generateDetailedFeedback } from '../services/geminiService';
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
-import { CheckCircle, AlertTriangle, BookOpen, Copy, Loader2, Video, FileText, Star, RefreshCw, ChevronRight, Activity } from 'lucide-react';
+import { CheckCircle, AlertTriangle, BookOpen, Copy, Loader2, Video, FileText, Star, RefreshCw, ChevronRight, Activity, Download } from 'lucide-react';
 import { useSEO } from '../hooks/useSEO';
+import Logo from './Logo';
 
 /**
  * Properties for the FeedbackStep component.
@@ -83,6 +84,36 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
     fetchReport();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /**
+   * Generates a downloadable performance report in text format.
+   */
+  const handleDownload = () => {
+    if (!report) return;
+    const text = `
+EASYINTERVIEW - PERFORMANCE REPORT
+----------------------------------
+Role: ${userDetails.targetRole}
+Overall Score: ${report.overallScore}/100
+ATS Resume Score: ${report.resumeAnalysis.atsScore}/100
+
+SUMMARY:
+${report.overallSummary}
+
+METRICS:
+${report.categoryFeedback.map(c => `- ${c.category}: ${c.score}/100`).join('\n')}
+
+Generated on: ${new Date().toLocaleString()}
+    `.trim();
+
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Interview_Report_${userDetails.targetRole.replace(/\s+/g, '_')}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   /**
    * Copies a summarized version of the interview report to the system clipboard.
@@ -229,6 +260,10 @@ const FeedbackStep: React.FC<FeedbackStepProps> = ({ userDetails, transcript, on
              </div>
              
              <div className="flex gap-3 mt-2 md:mt-4">
+                <button onClick={handleDownload} className="px-5 py-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl transition text-white flex items-center gap-2 group shadow-lg" title="Download Report">
+                    <Logo size={18} />
+                    <span className="text-sm font-bold">Download</span>
+                </button>
                 <button onClick={handleCopy} className="p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition text-white/80 hover:text-white" title="Copy Report">
                     <Copy size={20} />
                 </button>
