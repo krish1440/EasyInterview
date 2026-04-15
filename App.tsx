@@ -19,6 +19,7 @@ import { LayoutGrid, History as HistoryIcon, User, Monitor, Laptop, Globe, Home,
 import { Analytics } from "@vercel/analytics/react";
 import ErrorBoundary from './components/ErrorBoundary';
 import SecurityGuard from './components/SecurityGuard';
+import Logo from './components/Logo';
 
 /**
  * Primary Application Controller.
@@ -74,8 +75,8 @@ function App() {
         {/* Mobile Blocker - Desktop Requirement Enforcement */}
       <div className="lg:hidden min-h-screen bg-slate-50 flex flex-col font-sans">
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-          <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-indigo-200">
-             <Monitor size={40} className="text-indigo-600" />
+          <div className="w-24 h-24 bg-white rounded-[2rem] flex items-center justify-center mb-8 shadow-xl border border-slate-100 animate-pulse">
+             <Logo size={48} />
           </div>
           <h1 className="text-3xl font-extrabold text-slate-900 mb-3 tracking-tight">Desktop Experience Only</h1>
           <p className="text-slate-500 max-w-md text-lg leading-relaxed mb-8">
@@ -150,17 +151,9 @@ function App() {
       <div className="hidden lg:flex min-h-screen bg-slate-50 flex-col font-sans text-slate-900">
         <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
           <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-2 cursor-pointer group" onClick={handleRestart}>
-              <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z" />
-                  <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z" />
-                  <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4" />
-                  <path d="M17.599 6.5a3 3 0 0 0 .399-1.375" />
-                  <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5" />
-                  <path d="M3.477 12.578c.07.36.163.707.276 1.038" />
-                  <path d="M13 19v1a2 2 0 0 1-2 2v0a2 2 0 0 1-2-2v-1" />
-                </svg>
+            <div className="flex items-center gap-3 cursor-pointer group" onClick={handleRestart}>
+              <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-sm border border-indigo-100">
+                <Logo size={24} />
               </div>
               <span className="font-bold text-xl tracking-tight text-slate-800 group-hover:text-indigo-600 transition-colors">EasyInterview</span>
             </div>
