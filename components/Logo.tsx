@@ -15,7 +15,7 @@ interface LogoProps {
  * Premium Brand Asset: EasyInterview Logo.
  * 
  * @description
- * A modern, hexagonal emblem featuring a multi-stop gradient.
+ * A modern, pentagonal emblem featuring a professional interview motif.
  * Symbolizes a secure, AI-powered shield for career growth.
  * 
  * @component Logo
@@ -30,28 +30,32 @@ const Logo: React.FC<LogoProps> = ({ size = 24, className = "" }) => {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* Outer Hexagonal Shield */}
+      {/* Bold Pentagonal Interview Shield */}
       <path 
-        d="M12 2L4 6.5V17.5L12 22L20 17.5V6.5L12 2Z" 
+        d="M12 2L4 7V17.5L12 22L20 17.5V7L12 2Z" 
         fill="#4338ca" 
       />
       
-      {/* AI Neural Pulse - Central Intelligence Hub */}
-      <circle cx="12" cy="12" r="3.5" stroke="white" strokeWidth="1" strokeDasharray="1 1" />
-      <circle cx="12" cy="12" r="1.5" fill="white" />
+      {/* Large-Scale Microphone Core - Signifying Professional Interview */}
+      <rect x="9.5" y="7" width="5" height="8" rx="2.5" fill="white" />
       
-      {/* Advanced Intersecting Metrics - Linking Speech to Data */}
-      <path d="M12 7V9.5M12 14.5V17" stroke="white" strokeWidth="1" strokeLinecap="round" />
-      <path d="M7 12H9.5M14.5 12H17" stroke="white" strokeWidth="1" strokeLinecap="round" />
+      {/* Audio Capture Wave - Integrated UI Element */}
+      <path 
+        d="M7 11C7 13.7614 9.23858 16 12 16C14.7614 16 17 13.7614 17 11" 
+        stroke="white" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+      />
       
-      {/* Precision Nodes */}
-      <circle cx="12" cy="7.5" r="0.8" fill="white" />
-      <circle cx="12" cy="16.5" r="0.8" fill="white" />
-      <circle cx="7.5" cy="12" r="0.8" fill="white" />
-      <circle cx="16.5" cy="12" r="0.8" fill="white" />
+      {/* Dynamic Voice Modulation Bars */}
+      <rect x="7" y="10" width="1.5" height="2" rx="0.75" fill="white" fillOpacity="0.5" />
+      <rect x="15.5" y="10" width="1.5" height="2" rx="0.75" fill="white" fillOpacity="0.5" />
       
-      {/* Apex Spark */}
-      <circle cx="12" cy="4.5" r="1" fill="white" className="animate-pulse" />
+      {/* AI Apex Pulsar - Representing Live Analysis */}
+      <circle cx="12" cy="4.5" r="1.2" fill="white" className="animate-pulse" />
+      
+      {/* Stability Stem */}
+      <rect x="11.5" y="16" width="1" height="2.5" rx="0.5" fill="white" opacity="0.6" />
     </svg>
   );
 };
