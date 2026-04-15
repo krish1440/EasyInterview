@@ -31,36 +31,29 @@ const Logo: React.FC<LogoProps> = ({ size = 32, className = "" }) => {
       className={className}
     >
       <defs>
-        <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#6366f1" />
-          <stop offset="100%" stopColor="#a855f7" />
+        <linearGradient id="logo-dark-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#4338ca" /> {/* Indigo 700 */}
+          <stop offset="100%" stopColor="#7e22ce" /> {/* Purple 700 */}
         </linearGradient>
-        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
       </defs>
       
-      {/* Primary Bold Hexagon Container */}
+      {/* Outer Hexagon - High Contrast Stroke */}
       <path 
-        d="M50 5L11 27.5V72.5L50 95L89 27.5L50 5Z" 
-        fill="url(#logo-gradient)" 
-        stroke="white"
-        strokeWidth="1"
+        d="M50 8L12 30V70L50 92L88 70V30L50 8Z" 
+        stroke="url(#logo-dark-gradient)" 
+        strokeWidth="8" 
+        strokeLinejoin="round" 
       />
       
-      {/* Core "Voice" Negative Space Beam */}
-      <rect x="44" y="25" width="12" height="50" rx="6" fill="white" />
+      {/* Central Voice Metric - Solid Dark Gradient */}
+      <rect x="44" y="30" width="12" height="40" rx="6" fill="url(#logo-dark-gradient)" />
       
-      {/* Symmetric Frequency Side-Bars (Simplified for Visibility) */}
-      <rect x="28" y="40" width="10" height="20" rx="5" fill="white" fillOpacity="0.75" />
-      <rect x="62" y="40" width="10" height="20" rx="5" fill="white" fillOpacity="0.75" />
+      {/* Dynamic Spectrum Bars - Accentuating depth */}
+      <rect x="26" y="42" width="10" height="16" rx="5" fill="url(#logo-dark-gradient)" fillOpacity="0.4" />
+      <rect x="64" y="42" width="10" height="16" rx="5" fill="url(#logo-dark-gradient)" fillOpacity="0.4" />
       
-      {/* The "AI Spark" - Top Center Focus */}
-      <circle cx="50" cy="18" r="4" fill="white" filter="url(#glow)" />
-      
-      {/* Subtle Bottom Accent for Depth */}
-      <path d="M40 82H60" stroke="white" strokeWidth="3" strokeLinecap="round" opacity="0.4" />
+      {/* Intelligence Node - Floating at apex */}
+      <circle cx="50" cy="20" r="4" fill="#4338ca" />
     </svg>
   );
 };
