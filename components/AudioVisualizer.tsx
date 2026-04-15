@@ -36,28 +36,48 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ stream, isActive, col
   useEffect(() => {
     if (!stream || !isActive || !canvasRef.current) return;
 
-    // Initialize Web Audio context and analyzer
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const analyzer = audioContext.createAnalyser();
-    const source = audioContext.createMediaStreamSource(stream);
+    let audioContext: AudioContext | null = null;
+    let analyzer: AnalyserNode | null = null;
+    let source: MediaStreamAudioSourceNode | null = null;
+    
+    const hasAudioTracks = stream.getAudioTracks().length > 0;
 
-    analyzer.fftSize = 64; // Low resolution for clean bars
-    source.connect(analyzer);
+    if (hasAudioTracks) {
+      try {
+        // Initialize Web Audio context and analyzer
+        audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        analyzer = audioContext.createAnalyser();
+        source = audioContext.createMediaStreamSource(stream);
 
-    contextRef.current = audioContext;
-    analyzerRef.current = analyzer;
-    sourceRef.current = source;
+        analyzer.fftSize = 64; // Low resolution for clean bars
+        source.connect(analyzer);
 
-    const bufferLength = analyzer.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
+        contextRef.current = audioContext;
+        analyzerRef.current = analyzer;
+        sourceRef.current = source;
+      } catch (e) {
+        console.warn("AudioContext failed to initialize", e);
+      }
+    }
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-
     if (!ctx) return;
+
+    const bufferLength = analyzer?.frequencyBinCount || 32;
+    const dataArray = new Uint8Array(bufferLength);
 
     const draw = () => {
       animationRef.current = requestAnimationFrame(draw);
-      analyzer.getByteFrequencyData(dataArray);
+      
+      if (analyzer) {
+        analyzer.getByteFrequencyData(dataArray);
+      } else if (isActive) {
+        // Mock data for visual pulse if no actual audio stream is available
+        for (let i = 0; i < bufferLength; i++) {
+          dataArray[i] = Math.sin(Date.now() / 200 + i) * 50 + 100;
+        }
+      }
 
       // Clear Canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -75,14 +95,19 @@ const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ stream, isActive, col
 
         ctx.fillStyle = gradient;
         
-        // Draw rounded bars
+        // Draw rounded bars (with fallback for older browsers)
         const radius = barWidth / 2;
         const barX = x;
         const barY = canvas.height - barHeight;
         
-        ctx.beginPath();
-        ctx.roundRect(barX, barY, barWidth, barHeight, [radius, radius, 0, 0]);
-        ctx.fill();
+        if (ctx.roundRect) {
+          ctx.beginPath();
+          ctx.roundRect(barX, barY, barWidth, barHeight, [radius, radius, 0, 0]);
+          ctx.fill();
+        } else {
+          // Fallback to standard rect for older browsers
+          ctx.fillRect(barX, barY, barWidth, barHeight);
+        }
 
         x += barWidth + 2;
       }
