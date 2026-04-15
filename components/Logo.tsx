@@ -30,24 +30,28 @@ const Logo: React.FC<LogoProps> = ({ size = 24, className = "" }) => {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* High-Impact Solid Hexagon Background */}
+      {/* Outer Hexagonal Shield */}
       <path 
         d="M12 2L4 6.5V17.5L12 22L20 17.5V6.5L12 2Z" 
         fill="#4338ca" 
       />
       
-      {/* Central Voice Pillar - High Contrast White */}
-      <rect x="11" y="8" width="2" height="8" rx="1" fill="white" />
+      {/* AI Neural Pulse - Central Intelligence Hub */}
+      <circle cx="12" cy="12" r="3.5" stroke="white" strokeWidth="1" strokeDasharray="1 1" />
+      <circle cx="12" cy="12" r="1.5" fill="white" />
       
-      {/* Symmetrical Side-bars - Representing AI modulation */}
-      <rect x="7.5" y="10.5" width="2" height="3" rx="1" fill="white" fillOpacity="0.7" />
-      <rect x="14.5" y="10.5" width="2" height="3" rx="1" fill="white" fillOpacity="0.7" />
+      {/* Advanced Intersecting Metrics - Linking Speech to Data */}
+      <path d="M12 7V9.5M12 14.5V17" stroke="white" strokeWidth="1" strokeLinecap="round" />
+      <path d="M7 12H9.5M14.5 12H17" stroke="white" strokeWidth="1" strokeLinecap="round" />
       
-      {/* AI Apex Node */}
-      <circle cx="12" cy="5.5" r="1.2" fill="white" />
+      {/* Precision Nodes */}
+      <circle cx="12" cy="7.5" r="0.8" fill="white" />
+      <circle cx="12" cy="16.5" r="0.8" fill="white" />
+      <circle cx="7.5" cy="12" r="0.8" fill="white" />
+      <circle cx="16.5" cy="12" r="0.8" fill="white" />
       
-      {/* Subtle Base Foundation */}
-      <path d="M9 19H15" stroke="white" strokeWidth="1" strokeLinecap="round" opacity="0.3" />
+      {/* Apex Spark */}
+      <circle cx="12" cy="4.5" r="1" fill="white" className="animate-pulse" />
     </svg>
   );
 };
